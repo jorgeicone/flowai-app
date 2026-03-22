@@ -1454,11 +1454,17 @@
           </select>
         </div>
 
-        <div class="form-group">
-          <label>Hora</label>
-          <input type="time" id="taskTime">
-          <div style="font-size: 12px; color: var(--text2); margin-top: 4px;">Próximo espacio libre: <span id="nextSlot">—</span></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label>Fecha</label>
+            <input type="date" id="taskDate">
+          </div>
+          <div class="form-group">
+            <label>Hora</label>
+            <input type="time" id="taskTime">
+          </div>
         </div>
+        <div style="font-size: 11px; color: var(--text2); margin-top: -8px; margin-bottom: 12px;">💡 Próximo espacio libre: <span id="nextSlot">—</span></div>
 
         <div class="form-group">
           <label>Categoría</label>
@@ -1956,7 +1962,8 @@
               <div class="task-content">
                 <div class="task-name" style="text-decoration: ${task.completed ? 'line-through' : 'none'}; color: ${task.completed ? 'var(--text2)' : 'var(--text)'};">${task.name}</div>
                 <div class="task-meta">
-                  <div class="task-time">${task.time}</div>
+                  ${task.date && task.date !== new Date().toISOString().split('T')[0] ? `<div class="task-time" style="color:var(--accent2)">📅 ${task.date}</div>` : ''}
+                  <div class="task-time">🕐 ${task.time}</div>
                   <div class="task-duration">${task.duration}m</div>
                   <div class="priority-dot" style="background: ${task.priority === 'high' ? 'var(--danger)' : task.priority === 'medium' ? 'var(--warning)' : 'var(--success)'};"></div>
                 </div>
@@ -2165,10 +2172,12 @@
       currentEditingId = id;
       currentEditingType = type;
 
+      const todayStr = new Date().toISOString().split('T')[0];
       document.getElementById('taskName').value = '';
       document.getElementById('taskNotes').value = '';
       document.getElementById('taskDuration').value = '25';
-      document.getElementById('taskTime').value = '';
+      document.getElementById('taskDate').value = todayStr;
+      document.getElementById('taskTime').value = '09:00';
       document.getElementById('taskRecurring').value = 'never';
       document.getElementById('appointmentTitle').value = '';
       document.getElementById('appointmentDescription').value = '';
@@ -2200,10 +2209,11 @@
           const task = tasks.find(t => t.id === id);
           if (task) {
             document.getElementById('taskName').value = task.name;
-            document.getElementById('taskNotes').value = task.notes;
+            document.getElementById('taskNotes').value = task.notes || '';
             document.getElementById('taskDuration').value = task.duration;
-            document.getElementById('taskTime').value = task.time;
-            document.getElementById('taskRecurring').value = task.recurring;
+            document.getElementById('taskDate').value = task.date || new Date().toISOString().split('T')[0];
+            document.getElementById('taskTime').value = task.time || '09:00';
+            document.getElementById('taskRecurring').value = task.recurring || 'never';
             selectedTaskCategory = task.category;
             selectedTaskPriority = task.priority;
             renderCategoryGrid();
@@ -2323,8 +2333,9 @@
       const name = document.getElementById('taskName').value.trim();
       if (!name) { alert('Ingresa un nombre'); return; }
 
-      const time = document.getElementById('taskTime').value || '12:00';
+      const time = document.getElementById('taskTime').value || '09:00';
       const today = new Date().toISOString().split('T')[0];
+      const date = document.getElementById('taskDate').value || today;
 
       if (currentEditingId) {
         const task = tasks.find(t => t.id === currentEditingId);
@@ -2332,6 +2343,7 @@
           task.name = name;
           task.notes = document.getElementById('taskNotes').value;
           task.duration = parseInt(document.getElementById('taskDuration').value);
+          task.date = date;
           task.time = time;
           task.category = selectedTaskCategory;
           task.priority = selectedTaskPriority;
@@ -2339,9 +2351,9 @@
         }
       } else {
         tasks.push({
-          id: Math.max(...tasks.map(t => t.id), 0) + 1,
+          id: Date.now(),
           name, notes: document.getElementById('taskNotes').value,
-          date: today,
+          date,
           time,
           duration: parseInt(document.getElementById('taskDuration').value),
           category: selectedTaskCategory,
