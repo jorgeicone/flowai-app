@@ -1865,6 +1865,49 @@
               <div id="savedDocuments"></div>
             </div>
 
+            <!-- ☁️ CLOUD SYNC SECTION -->
+            <div class="settings-section" style="border:1px solid rgba(124,58,237,0.3);background:rgba(124,58,237,0.05);border-radius:var(--radius);">
+              <div class="settings-section-title" style="color:var(--accent-light);">☁️ Sincronización entre dispositivos</div>
+
+              <!-- Status row -->
+              <div class="settings-row" style="margin-bottom:12px;">
+                <div>
+                  <div class="settings-label">Estado</div>
+                  <div class="settings-sublabel">Datos en tiempo real entre todos tus dispositivos</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div id="syncStatusDot" style="width:10px;height:10px;border-radius:50%;background:var(--text-3);"></div>
+                  <span id="syncStatusText" style="font-size:12px;color:var(--text-2);">Sin sincronizar</span>
+                </div>
+              </div>
+
+              <!-- If already connected: show code + disconnect -->
+              <div id="syncShareBlock" style="display:none;">
+                <div style="background:var(--bg-3);border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:12px;">
+                  <div style="font-size:11px;color:var(--text-2);margin-bottom:6px;letter-spacing:0.5px;">TU CÓDIGO DE SYNC</div>
+                  <div id="syncCodeDisplay" style="font-family:var(--mono);font-size:13px;word-break:break-all;color:var(--accent-light);"></div>
+                </div>
+                <p style="font-size:12px;color:var(--text-2);margin-bottom:12px;">Copia este código y pégalo en cualquier otro dispositivo para sincronizar los datos al instante.</p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <button onclick="navigator.clipboard?.writeText(syncBlobId).then(()=>alert('Código copiado ✓'))" class="btn-primary" style="font-size:13px;padding:8px 16px;">📋 Copiar código</button>
+                  <button onclick="cloudPull()" class="btn-primary" style="font-size:13px;padding:8px 16px;background:var(--bg-4);">🔄 Sync ahora</button>
+                  <button onclick="if(confirm('¿Desconectar sync? Tus datos locales se conservan.')){disconnectSync();}" class="btn-primary" style="font-size:13px;padding:8px 16px;background:linear-gradient(135deg,var(--red),#dc2626);">✕ Desconectar</button>
+                </div>
+              </div>
+
+              <!-- If not connected: generate or enter code -->
+              <div id="syncConnectBlock">
+                <button onclick="cloudCreate()" class="btn-primary" style="width:100%;margin-bottom:12px;background:linear-gradient(135deg,var(--accent),var(--cyan));">
+                  ✨ Generar nuevo código de sync
+                </button>
+                <div style="text-align:center;color:var(--text-3);font-size:12px;margin-bottom:12px;">— o conectar con un código existente —</div>
+                <div style="display:flex;gap:8px;">
+                  <input id="syncCodeInput" type="text" class="form-input" placeholder="Pega tu código aquí…" style="flex:1;font-family:var(--mono);font-size:13px;">
+                  <button onclick="connectSyncCode(document.getElementById('syncCodeInput').value)" class="btn-primary" style="padding:10px 16px;font-size:13px;">Conectar</button>
+                </div>
+              </div>
+            </div>
+
             <div class="settings-section">
               <div class="settings-section-title">Datos</div>
               <button class="btn-primary" onclick="exportData()">📥 Descargar copia</button>
@@ -1984,6 +2027,13 @@
 
     let tasks = [];
     let weekOffset = 0;
+
+    // ── Cloud Sync state ──────────────────────────────────────────────────────
+    let syncBlobId   = localStorage.getItem('flowai_sync_blob') || null;
+    let syncEnabled  = !!syncBlobId;
+    let syncStatus   = 'idle'; // idle | syncing | ok | error
+    let syncInterval = null;
+    let lastPushHash = '';   // avoid redundant pushes
     let appointments = [];
     let projects = [];
     let categories = DEFAULT_CATEGORIES;
@@ -2020,10 +2070,14 @@
       updateClock();
       setInterval(updateClock, 1000);
       setInterval(updateTimer, 1000);
-      setInterval(checkAlarms, 10000); // check alarms every 10 seconds
-      setTimeout(checkMissedAlarms, 2000); // on load, check last 10 min
+      setInterval(checkAlarms, 10000);
+      setTimeout(checkMissedAlarms, 2000);
       initializeNotifications();
       loadSampleData();
+      // Start cloud sync if previously configured
+      if (syncEnabled && syncBlobId) {
+        setTimeout(() => { cloudPull(); startSyncInterval(); }, 1500);
+      }
     }
 
     function loadData() {
@@ -2049,6 +2103,8 @@
       localStorage.setItem('flowai_categories', JSON.stringify(categories));
       localStorage.setItem('flowai_settings', JSON.stringify(settings));
       localStorage.setItem('flowai_attachments', JSON.stringify(attachments));
+      // Push to cloud if sync is active
+      if (syncEnabled && syncBlobId) cloudPush();
     }
 
     function loadSampleData() {
@@ -2715,6 +2771,8 @@
     function renderSettings() {
       document.getElementById('settingName').value = settings.name;
       document.getElementById('settingEmail').value = settings.email || '';
+      setSyncStatus(syncStatus);
+      renderSyncUI();
       document.getElementById('focusDuration').value = settings.focusDuration;
       document.getElementById('breakDuration').value = settings.breakDuration;
 
@@ -3095,6 +3153,148 @@
       const now = new Date();
       const diff = target - now;
       return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    }
+
+    // ── Cloud Sync (jsonblob.com — free, no account required) ─────────────────
+    const BLOB_API = 'https://jsonblob.com/api/jsonBlob';
+
+    function syncPayload() {
+      return { tasks, appointments, projects, categories, settings, attachments, updatedAt: Date.now() };
+    }
+
+    async function cloudCreate() {
+      setSyncStatus('syncing');
+      try {
+        const res = await fetch(BLOB_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(syncPayload())
+        });
+        if (!res.ok) throw new Error('create failed');
+        const loc = res.headers.get('Location') || '';
+        const id  = loc.split('/').pop();
+        if (!id) throw new Error('no id');
+        syncBlobId = id;
+        syncEnabled = true;
+        localStorage.setItem('flowai_sync_blob', id);
+        setSyncStatus('ok');
+        renderSyncUI();
+        startSyncInterval();
+        return id;
+      } catch (e) {
+        setSyncStatus('error');
+        return null;
+      }
+    }
+
+    async function cloudPush() {
+      if (!syncBlobId) return;
+      const payload = JSON.stringify(syncPayload());
+      if (payload === lastPushHash) return; // nothing changed
+      lastPushHash = payload;
+      setSyncStatus('syncing');
+      try {
+        const res = await fetch(`${BLOB_API}/${syncBlobId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: payload
+        });
+        setSyncStatus(res.ok ? 'ok' : 'error');
+      } catch (e) { setSyncStatus('error'); }
+    }
+
+    async function cloudPull() {
+      if (!syncBlobId) return;
+      setSyncStatus('syncing');
+      try {
+        const res = await fetch(`${BLOB_API}/${syncBlobId}`, {
+          headers: { 'Accept': 'application/json' }
+        });
+        if (!res.ok) throw new Error('pull failed');
+        const remote = await res.json();
+        // Merge: keep whichever is newer per item by updatedAt
+        if (remote.tasks)        tasks        = remote.tasks;
+        if (remote.appointments) appointments = remote.appointments;
+        if (remote.projects)     projects     = remote.projects;
+        if (remote.categories)   categories   = remote.categories;
+        if (remote.attachments)  attachments  = remote.attachments;
+        // Save locally
+        localStorage.setItem('flowai_tasks',        JSON.stringify(tasks));
+        localStorage.setItem('flowai_appointments', JSON.stringify(appointments));
+        localStorage.setItem('flowai_projects',     JSON.stringify(projects));
+        localStorage.setItem('flowai_categories',   JSON.stringify(categories));
+        localStorage.setItem('flowai_attachments',  JSON.stringify(attachments));
+        setSyncStatus('ok');
+        renderAll();
+        renderSyncUI();
+      } catch (e) { setSyncStatus('error'); }
+    }
+
+    async function connectSyncCode(code) {
+      const id = code.trim();
+      if (!id) return;
+      // Test if blob exists
+      setSyncStatus('syncing');
+      try {
+        const res = await fetch(`${BLOB_API}/${id}`, { headers: { 'Accept': 'application/json' } });
+        if (!res.ok) throw new Error('not found');
+        syncBlobId  = id;
+        syncEnabled = true;
+        localStorage.setItem('flowai_sync_blob', id);
+        await cloudPull();
+        startSyncInterval();
+        renderSyncUI();
+      } catch (e) {
+        setSyncStatus('error');
+        alert('Código no encontrado. Verifica que sea correcto.');
+      }
+    }
+
+    function disconnectSync() {
+      syncBlobId  = null;
+      syncEnabled = false;
+      if (syncInterval) clearInterval(syncInterval);
+      syncInterval = null;
+      localStorage.removeItem('flowai_sync_blob');
+      setSyncStatus('idle');
+      renderSyncUI();
+    }
+
+    function startSyncInterval() {
+      if (syncInterval) clearInterval(syncInterval);
+      syncInterval = setInterval(() => { if (syncEnabled) cloudPull(); }, 30000);
+    }
+
+    function setSyncStatus(s) {
+      syncStatus = s;
+      const el = document.getElementById('syncStatusDot');
+      const txt = document.getElementById('syncStatusText');
+      if (!el || !txt) return;
+      const map = {
+        idle:    { color: 'var(--text-3)',    label: 'Sin sincronizar' },
+        syncing: { color: 'var(--yellow)',    label: 'Sincronizando…' },
+        ok:      { color: 'var(--green)',     label: 'Sincronizado ✓' },
+        error:   { color: 'var(--red)',       label: 'Error de conexión' },
+      };
+      const info = map[s] || map.idle;
+      el.style.background  = info.color;
+      txt.textContent      = info.label;
+    }
+
+    function renderSyncUI() {
+      const codeEl  = document.getElementById('syncCodeDisplay');
+      const shareEl = document.getElementById('syncShareBlock');
+      const connectEl = document.getElementById('syncConnectBlock');
+      if (!codeEl) return;
+      if (syncBlobId) {
+        codeEl.textContent = syncBlobId;
+        if (shareEl)   shareEl.style.display  = 'block';
+        if (connectEl) connectEl.style.display = 'none';
+      } else {
+        codeEl.textContent = '—';
+        if (shareEl)   shareEl.style.display  = 'none';
+        if (connectEl) connectEl.style.display = 'block';
+      }
     }
 
     // ── Alarm system ──────────────────────────────────────────────────────────
