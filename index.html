@@ -3,1079 +3,1223 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FlowAI v3 - Personal Task Manager</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000">
+  <title>FlowAI — Productivity</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #07070e;
-      --bg2: #0d0d1a;
-      --card: rgba(255, 255, 255, 0.04);
-      --card-hover: rgba(255, 255, 255, 0.07);
-      --border: rgba(255, 255, 255, 0.08);
+      --bg: #000000;
+      --bg-1: #0a0a0a;
+      --bg-2: #111111;
+      --bg-3: #1a1a1a;
+      --bg-4: #222222;
+      --border: rgba(255,255,255,0.08);
+      --border-strong: rgba(255,255,255,0.15);
       --accent: #7c3aed;
-      --accent2: #06b6d4;
-      --accent3: #10b981;
-      --text: #f1f5f9;
-      --text2: #94a3b8;
-      --text3: #475569;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
+      --accent-light: #a78bfa;
+      --accent-glow: rgba(124,58,237,0.2);
+      --cyan: #06b6d4;
+      --cyan-glow: rgba(6,182,212,0.15);
+      --green: #10b981;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --pink: #ec4899;
+      --text: #ffffff;
+      --text-1: #e5e5e5;
+      --text-2: #a3a3a3;
+      --text-3: #525252;
+      --radius-xs: 8px;
+      --radius-sm: 12px;
       --radius: 16px;
-      --radius-sm: 10px;
-      --font: 'Inter', sans-serif;
-      --mono: 'JetBrains Mono', monospace;
-      --nav-h: 64px;
+      --radius-lg: 24px;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: 'JetBrains Mono', 'SF Mono', monospace;
+      --nav-h: 72px;
+      --shadow: 0 8px 32px rgba(0,0,0,0.4);
+      --shadow-lg: 0 24px 64px rgba(0,0,0,0.6);
     }
 
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    body {
+    html, body {
+      width: 100%;
+      height: 100%;
       font-family: var(--font);
       background: var(--bg);
       color: var(--text);
+      line-height: 1.6;
       overflow: hidden;
     }
 
-    /* Particles Canvas Background */
-    #particleCanvas {
+    /* PARTICLE BACKGROUND */
+    #particles {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      z-index: 1;
       pointer-events: none;
+      opacity: 0.15;
+      z-index: 0;
     }
 
-    .container {
+    /* LAYOUT CONTAINER */
+    .app-container {
       position: relative;
-      z-index: 10;
+      z-index: 1;
       display: grid;
-      grid-template-columns: 240px 1fr 300px;
+      grid-template-columns: 260px 1fr 280px;
       height: 100vh;
       gap: 0;
     }
 
-    /* SIDEBAR */
+    /* DESKTOP SIDEBAR */
     .sidebar {
-      background: var(--bg2);
+      background: var(--bg-1);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      padding: 20px;
-      overflow-y: auto;
+      overflow: hidden;
     }
 
-    .logo {
+    .sidebar-header {
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: var(--nav-h);
+    }
+
+    .sidebar-logo {
       font-size: 24px;
+    }
+
+    .sidebar-title {
+      font-size: 18px;
       font-weight: 700;
-      margin-bottom: 30px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      letter-spacing: -0.5px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
     .nav-item {
-      padding: 12px 16px;
-      margin: 6px 0;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border: 1px solid transparent;
-      font-weight: 500;
       display: flex;
       align-items: center;
       gap: 12px;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
       font-size: 14px;
+      font-weight: 500;
+      color: var(--text-2);
+      transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid transparent;
     }
 
     .nav-item:hover {
-      background: var(--card-hover);
-      border-color: var(--border);
+      background: var(--bg-3);
+      color: var(--text-1);
     }
 
     .nav-item.active {
-      background: var(--accent);
-      color: white;
+      background: var(--accent-glow);
+      color: var(--accent-light);
       border-color: var(--accent);
     }
 
-    .nav-icon {
-      font-size: 18px;
-      min-width: 20px;
+    .nav-item-icon {
+      font-size: 20px;
+      width: 24px;
+      text-align: center;
     }
 
-    /* MAIN AREA */
-    .main {
+    /* MAIN CONTENT */
+    .main-content {
       background: var(--bg);
       overflow-y: auto;
-      padding: 30px;
-      border-right: 1px solid var(--border);
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
-    /* ASIDE (TIMER + AI) */
-    .aside {
-      background: var(--bg2);
+    .main-scroll {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .page {
+      display: none;
+      opacity: 0;
+      animation: pageEnter 400ms ease-out forwards;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes pageEnter {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .page-padding {
+      padding: 32px;
+    }
+
+    /* RIGHT PANEL - TIMER + AI */
+    .right-panel {
+      background: var(--bg-1);
       border-left: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      overflow-y: auto;
+      overflow: hidden;
     }
 
-    /* VIEWS */
-    .view {
-      display: none;
-    }
-
-    .view.active {
-      display: block;
-    }
-
-    /* PAGE TITLE */
-    .page-title {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 24px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    /* CARDS */
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 12px;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
-    }
-
-    .card:hover {
-      background: var(--card-hover);
-      border-color: var(--accent2);
-      box-shadow: 0 0 20px rgba(6, 182, 212, 0.1);
-    }
-
-    /* BUTTONS */
-    .btn {
-      padding: 10px 16px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--text);
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      font-size: 13px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn:hover {
-      background: var(--card-hover);
-      border-color: var(--accent);
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: #6d28d9;
-      box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
-    }
-
-    .btn-success {
-      background: var(--accent3);
-      border-color: var(--accent3);
-      color: white;
-    }
-
-    .btn-danger {
-      background: var(--danger);
-      border-color: var(--danger);
-      color: white;
-    }
-
-    .btn-sm {
-      padding: 6px 12px;
-      font-size: 12px;
-    }
-
-    /* MODAL */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(4px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-    }
-
-    .modal-overlay.active {
-      display: flex;
-    }
-
-    .modal {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      width: 90%;
-      max-width: 500px;
-      max-height: 90vh;
+    .panel-section {
+      flex: 1;
       overflow-y: auto;
       padding: 24px;
-      animation: slideUp 0.3s ease;
-      position: relative;
-    }
-
-    @keyframes slideUp {
-      from {
-        transform: translateY(20px);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-
-    .modal-close {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      background: none;
-      border: none;
-      color: var(--text2);
-      font-size: 24px;
-      cursor: pointer;
-      padding: 4px 8px;
-      transition: all 0.3s ease;
-    }
-
-    .modal-close:hover {
-      color: var(--text);
-      transform: scale(1.1);
-    }
-
-    /* TYPE SELECTOR IN MODAL */
-    .modal-type-selector {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 24px;
       border-bottom: 1px solid var(--border);
-      padding-bottom: 16px;
     }
 
-    .type-btn {
-      padding: 8px 16px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--text2);
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      font-size: 13px;
+    .panel-section:last-child {
+      border-bottom: none;
     }
 
-    .type-btn.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: white;
-    }
-
-    /* FORM FIELDS */
-    .form-group {
+    .panel-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
       margin-bottom: 16px;
     }
 
-    .form-group label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: var(--text2);
-    }
-
-    input[type="text"],
-    input[type="email"],
-    input[type="date"],
-    input[type="time"],
-    input[type="url"],
-    input[type="number"],
-    textarea,
-    select {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--card);
-      color: var(--text);
-      font-family: var(--font);
-      font-size: 13px;
-      transition: all 0.3s ease;
-    }
-
-    input[type="text"]:focus,
-    input[type="email"]:focus,
-    input[type="date"]:focus,
-    input[type="time"]:focus,
-    input[type="url"]:focus,
-    input[type="number"]:focus,
-    textarea:focus,
-    select:focus {
-      outline: none;
-      border-color: var(--accent);
-      background: rgba(124, 58, 237, 0.1);
-      box-shadow: 0 0 10px rgba(124, 58, 237, 0.2);
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 80px;
-    }
-
-    /* CATEGORY GRID */
-    .category-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .category-btn {
-      padding: 12px;
-      border: 2px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--card);
-      color: var(--text);
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.3s ease;
-      font-size: 13px;
-      font-weight: 500;
+    /* TIMER SECTION */
+    .timer-display {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
-    }
-
-    .category-btn:hover {
-      background: var(--card-hover);
-    }
-
-    .category-btn.selected {
-      border-color: var(--accent);
-      background: rgba(124, 58, 237, 0.15);
-    }
-
-    .category-icon {
-      font-size: 24px;
-    }
-
-    /* PRIORITY BUTTONS */
-    .priority-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .priority-btn {
-      padding: 10px;
-      border: 2px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--card);
-      color: var(--text);
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      font-size: 13px;
-    }
-
-    .priority-btn.selected {
-      border-color: currentColor;
-      transform: scale(1.05);
-      box-shadow: 0 0 15px currentColor;
-    }
-
-    .priority-high {
-      color: var(--danger);
-    }
-
-    .priority-medium {
-      color: var(--warning);
-    }
-
-    .priority-low {
-      color: var(--success);
-    }
-
-    /* COLOR SWATCHES */
-    .color-swatches {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-
-    .swatch {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      border: 2px solid transparent;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .swatch:hover {
-      transform: scale(1.1);
-    }
-
-    .swatch.selected {
-      border-color: var(--text);
-      box-shadow: 0 0 12px currentColor;
-    }
-
-    /* EMOJI PICKER GRID */
-    .emoji-grid {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 8px;
-      padding: 12px;
-      background: var(--card);
-      border-radius: var(--radius-sm);
-      margin-bottom: 16px;
-    }
-
-    .emoji-btn {
-      aspect-ratio: 1;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      font-size: 24px;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .emoji-btn:hover {
-      background: var(--card-hover);
-      border-color: var(--accent);
-      transform: scale(1.1);
-    }
-
-    /* TASK CARD */
-    .task-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: all 0.3s ease;
-    }
-
-    .task-card:hover {
-      background: var(--card-hover);
-      border-color: var(--accent2);
-    }
-
-    .task-category-icon {
-      font-size: 24px;
-      min-width: 32px;
-      text-align: center;
-    }
-
-    .task-content {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .task-name {
-      font-weight: 600;
-      margin-bottom: 4px;
-      word-break: break-word;
-    }
-
-    .task-meta {
-      display: flex;
-      gap: 8px;
-      font-size: 12px;
-      color: var(--text2);
-      flex-wrap: wrap;
-    }
-
-    .task-time {
-      background: var(--accent);
-      color: white;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 500;
-    }
-
-    .task-duration {
-      background: var(--border);
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-
-    .priority-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    .task-actions {
-      display: flex;
-      gap: 6px;
-    }
-
-    .task-btn {
-      background: none;
-      border: none;
-      color: var(--text2);
-      cursor: pointer;
-      font-size: 16px;
-      padding: 4px 8px;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .task-btn:hover {
-      color: var(--accent);
-      transform: scale(1.1);
-    }
-
-    /* TODAY VIEW */
-    .progress-section {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
+      gap: 16px;
       margin-bottom: 24px;
     }
 
-    .progress-title {
-      font-size: 13px;
+    .timer-ring {
+      position: relative;
+      width: 160px;
+      height: 160px;
+    }
+
+    .timer-ring svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .timer-ring-bg {
+      stroke: var(--bg-3);
+    }
+
+    .timer-ring-progress {
+      stroke: url(#timerGradient);
+      stroke-dasharray: 502.4;
+      stroke-dashoffset: 502.4;
+      transition: stroke-dashoffset 1s linear;
+    }
+
+    .timer-time {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: var(--mono);
+      font-size: 36px;
       font-weight: 600;
-      color: var(--text2);
+      text-align: center;
+      line-height: 1;
+    }
+
+    .timer-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .timer-task {
+      font-size: 13px;
+      color: var(--text-2);
+      text-align: center;
+      max-width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .timer-controls {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .timer-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      color: var(--text-2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all 300ms;
+    }
+
+    .timer-btn:hover {
+      background: var(--bg-4);
+      color: var(--text-1);
+    }
+
+    .timer-stats {
+      font-size: 12px;
+      color: var(--text-3);
+      text-align: center;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      margin-top: 16px;
+    }
+
+    /* AI SECTION */
+    .ai-chat {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .ai-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #7c3aed, #06b6d4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
       margin-bottom: 8px;
+    }
+
+    .ai-response {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-2);
+      background: var(--bg-3);
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      animation: fadeIn 300ms ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .ai-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .ai-action-btn {
+      padding: 10px 12px;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      color: var(--text-2);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 300ms;
+      text-align: left;
+    }
+
+    .ai-action-btn:hover {
+      background: var(--bg-4);
+      color: var(--text-1);
+      border-color: var(--border-strong);
+    }
+
+    /* HOY PAGE */
+    .today-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 32px;
+    }
+
+    .today-greeting {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+    }
+
+    .today-time {
+      font-size: 14px;
+      color: var(--text-2);
+      margin-top: 4px;
+    }
+
+    .progress-section {
+      margin-bottom: 32px;
+    }
+
+    .progress-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-2);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
     }
 
     .progress-bar {
       width: 100%;
       height: 8px;
-      background: var(--bg);
+      background: var(--bg-3);
       border-radius: 4px;
       overflow: hidden;
     }
 
     .progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      border-radius: 4px;
-      transition: width 0.3s ease;
+      background: linear-gradient(90deg, var(--accent), var(--cyan));
+      transition: width 600ms cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .progress-text {
+    .timeline-section {
+      margin-bottom: 32px;
+    }
+
+    .timeline-label {
       font-size: 12px;
-      color: var(--text2);
-      margin-top: 6px;
+      font-weight: 600;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
     }
 
-    /* TIMELINE */
     .timeline {
-      display: grid;
-      grid-template-columns: repeat(24, 1fr);
-      gap: 4px;
-      margin: 24px 0;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      margin-bottom: 24px;
     }
 
     .timeline-block {
+      flex-shrink: 0;
+      width: 48px;
       aspect-ratio: 1;
-      background: var(--card);
+      border-radius: var(--radius-xs);
+      background: var(--bg-3);
       border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--text2);
+      font-size: 11px;
+      color: var(--text-3);
+      cursor: pointer;
+      transition: all 300ms;
+      position: relative;
     }
 
     .timeline-block:hover {
-      background: var(--card-hover);
-      border-color: var(--accent);
-      transform: scale(1.1);
+      background: var(--bg-4);
     }
 
-    /* TIMER SECTION */
-    .timer-section {
-      padding: 20px;
+    .timeline-block.current {
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      color: var(--bg);
+      border-color: var(--accent-light);
+    }
+
+    .timeline-block.has-tasks {
+      border-color: var(--border-strong);
+    }
+
+    .tasks-section {
+      margin-bottom: 32px;
+    }
+
+    .tasks-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .task-list {
       display: flex;
       flex-direction: column;
-      align-items: center;
+      gap: 12px;
     }
 
-    .timer-ring {
-      width: 200px;
-      height: 200px;
+    .task-card {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 16px;
+      background: var(--bg-3);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius);
+      transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      animation: taskEnter 400ms ease-out backwards;
+    }
+
+    @keyframes taskEnter {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .task-card:nth-child(1) { animation-delay: 0ms; }
+    .task-card:nth-child(2) { animation-delay: 50ms; }
+    .task-card:nth-child(3) { animation-delay: 100ms; }
+    .task-card:nth-child(4) { animation-delay: 150ms; }
+    .task-card:nth-child(5) { animation-delay: 200ms; }
+
+    .task-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(124, 58, 237, 0.15);
+      background: var(--bg-4);
+    }
+
+    .task-card.completed {
+      opacity: 0.4;
+    }
+
+    .task-card.completed .task-name {
+      text-decoration: line-through;
+      color: var(--text-3);
+    }
+
+    .task-checkbox {
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
-      margin: 20px 0;
-      position: relative;
+      border: 2px solid var(--border-strong);
+      background: transparent;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: all 300ms;
+      font-size: 20px;
+      flex-shrink: 0;
     }
 
-    .timer-display {
-      font-size: 48px;
-      font-family: var(--mono);
-      font-weight: 700;
-      text-align: center;
-    }
-
-    .timer-label {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text2);
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .timer-task {
-      font-size: 12px;
-      color: var(--text2);
-      margin-bottom: 12px;
-      max-width: 200px;
-      text-align: center;
-    }
-
-    .timer-controls {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .timer-btn {
-      padding: 8px 12px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--text);
-      cursor: pointer;
-      font-size: 12px;
-      transition: all 0.3s ease;
-    }
-
-    .timer-btn:hover {
+    .task-card:hover .task-checkbox {
       border-color: var(--accent);
-      color: var(--accent);
     }
 
-    /* AI CHAT */
-    .ai-section {
-      padding: 20px;
+    .task-card.completed .task-checkbox {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .task-content {
       display: flex;
       flex-direction: column;
-      height: 100%;
+      gap: 8px;
     }
 
-    .ai-header {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 16px;
+    .task-name {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .task-meta {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .task-category {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      background: var(--bg-2);
+      border-radius: 12px;
+      font-size: 12px;
+      color: var(--text-2);
+      border: 1px solid var(--border);
+    }
+
+    .task-time {
+      font-size: 12px;
+      color: var(--text-3);
+    }
+
+    .task-duration {
+      font-size: 11px;
+      padding: 3px 6px;
+      background: rgba(124, 58, 237, 0.15);
+      border-radius: 6px;
+      color: var(--accent-light);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+    }
+
+    .task-actions {
+      display: flex;
+      gap: 8px;
+      opacity: 0;
+      transition: opacity 300ms;
+      flex-shrink: 0;
+    }
+
+    .task-card:hover .task-actions {
+      opacity: 1;
+    }
+
+    .action-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-xs);
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      color: var(--text-2);
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 300ms;
     }
 
-    .chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      margin-bottom: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    .action-btn:hover {
+      background: var(--bg-4);
+      color: var(--text-1);
+      border-color: var(--border-strong);
     }
 
-    .chat-message {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 12px;
-      font-size: 13px;
-      line-height: 1.5;
-      word-wrap: break-word;
-    }
-
-    .chat-message.ai {
-      color: var(--text2);
-    }
-
-    .chat-input-group {
-      display: flex;
-      gap: 8px;
-    }
-
-    .chat-input {
-      flex: 1;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--card);
-      color: var(--text);
-      font-family: var(--font);
-      font-size: 12px;
-    }
-
-    .chat-send {
-      padding: 10px 12px;
-      border-radius: var(--radius-sm);
-      background: var(--accent);
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s ease;
-    }
-
-    .chat-send:hover {
-      background: #6d28d9;
-    }
-
-    .ai-quick-btn {
-      padding: 8px 12px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--text);
-      cursor: pointer;
-      font-size: 11px;
-      transition: all 0.3s ease;
-      margin-bottom: 8px;
-    }
-
-    .ai-quick-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    /* WEEK VIEW */
+    /* SEMANA PAGE */
     .week-grid {
       display: grid;
-      grid-template-columns: repeat(7, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: 12px;
+      margin-bottom: 32px;
     }
 
     .day-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
       padding: 16px;
-      min-height: 150px;
+      background: var(--bg-3);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 300ms;
       text-align: center;
+    }
+
+    .day-card:hover {
+      background: var(--bg-4);
+      border-color: var(--border-strong);
+      transform: translateY(-2px);
     }
 
     .day-card.today {
-      border-color: var(--accent);
-      background: rgba(124, 58, 237, 0.1);
+      border: 2px solid var(--accent);
+      background: var(--accent-glow);
     }
 
     .day-name {
+      font-size: 14px;
       font-weight: 600;
-      margin-bottom: 8px;
-      color: var(--text2);
+      color: var(--text-2);
+      margin-bottom: 4px;
     }
 
     .day-date {
-      font-size: 18px;
+      font-size: 24px;
       font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .day-count {
+      font-size: 12px;
+      color: var(--text-3);
+      padding: 8px;
+      background: var(--bg-2);
+      border-radius: var(--radius-xs);
+      margin-top: 8px;
+    }
+
+    .day-tasks {
+      font-size: 11px;
+      color: var(--text-2);
+      margin-top: 8px;
+      line-height: 1.4;
+    }
+
+    /* CITAS PAGE */
+    .appointments-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .appointments-title {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .appointment-section {
+      margin-bottom: 32px;
+    }
+
+    .appointment-date-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      padding-top: 12px;
+    }
+
+    .appointment-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .appointment-card {
+      display: grid;
+      grid-template-columns: 4px 1fr auto;
+      gap: 12px;
+      padding: 16px;
+      background: var(--bg-3);
+      border-radius: var(--radius);
+      transition: all 300ms;
+    }
+
+    .appointment-card:hover {
+      background: var(--bg-4);
+      transform: translateY(-2px);
+    }
+
+    .appointment-color {
+      width: 4px;
+      border-radius: 2px;
+      background: var(--cyan);
+    }
+
+    .appointment-info {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .appointment-time {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent-light);
+    }
+
+    .appointment-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .appointment-details {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .appointment-detail {
+      font-size: 12px;
+      color: var(--text-3);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .appointment-attendees {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .avatar-small {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--accent-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    /* PROYECTOS PAGE */
+    .projects-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .projects-tab {
+      padding: 12px 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-2);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 300ms;
+      margin-bottom: -1px;
+    }
+
+    .projects-tab.active {
+      color: var(--accent-light);
+      border-bottom-color: var(--accent);
+    }
+
+    .kanban-board {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .kanban-column {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .kanban-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-2);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .kanban-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .project-card {
+      padding: 16px;
+      background: var(--bg-3);
+      border-radius: var(--radius);
+      border-top: 4px solid var(--accent);
+      cursor: pointer;
+      transition: all 300ms;
+    }
+
+    .project-card:hover {
+      background: var(--bg-4);
+      transform: translateY(-2px);
+    }
+
+    .project-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .project-progress {
       margin-bottom: 12px;
     }
 
-    .day-indicator {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
+    .progress-percent {
+      font-size: 12px;
+      color: var(--text-3);
+      margin-bottom: 6px;
     }
 
-    /* GANTT CHART */
+    .progress-bar-sm {
+      width: 100%;
+      height: 6px;
+      background: var(--bg-2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-fill-sm {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--cyan));
+    }
+
+    .project-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-3);
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
     .gantt-container {
       overflow-x: auto;
-      margin-top: 24px;
     }
 
-    .gantt-header {
-      display: grid;
-      grid-template-columns: 200px repeat(30, 1fr);
-      gap: 0;
-      font-size: 11px;
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-
-    .gantt-day {
-      padding: 8px 4px;
-      text-align: center;
-      border-bottom: 1px solid var(--border);
+    .gantt-chart {
+      min-width: 100%;
     }
 
     .gantt-row {
       display: grid;
-      grid-template-columns: 200px repeat(30, 1fr);
-      gap: 0;
-      align-items: center;
+      grid-template-columns: 200px 1fr;
+      gap: 12px;
       padding: 12px 0;
       border-bottom: 1px solid var(--border);
+      align-items: center;
     }
 
     .gantt-label {
-      padding: 0 12px;
+      font-size: 14px;
       font-weight: 500;
-      font-size: 13px;
-      text-align: left;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    .gantt-cell {
+    .gantt-timeline {
+      display: flex;
+      gap: 2px;
+      height: 32px;
       position: relative;
-      min-height: 40px;
+    }
+
+    .gantt-day {
+      flex: 1;
+      background: var(--bg-2);
+      border-radius: 2px;
+      border: 1px solid var(--border);
+      min-height: 100%;
+    }
+
+    .gantt-day.today {
+      background: var(--accent-glow);
+      border-color: var(--accent);
     }
 
     .gantt-bar {
       position: absolute;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
       height: 32px;
+      background: linear-gradient(90deg, var(--cyan), var(--accent));
       border-radius: 4px;
+      top: 0;
       display: flex;
       align-items: center;
-      justify-content: flex-end;
-      padding-right: 8px;
+      padding: 0 6px;
+      color: var(--bg);
       font-size: 11px;
-      color: white;
       font-weight: 600;
       overflow: hidden;
-      text-overflow: ellipsis;
-      top: 50%;
-      transform: translateY(-50%);
+      box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
     }
 
-    .gantt-today {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: var(--accent2);
+    /* RECORDATORIOS PAGE */
+    .reminders-group {
+      margin-bottom: 32px;
     }
 
-    /* SETTINGS VIEW */
-    .settings-container {
-      max-width: 600px;
+    .reminders-group-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent-light);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
+    .reminder-item {
+      display: grid;
+      grid-template-columns: 60px 1fr auto;
+      gap: 12px;
+      padding: 16px;
+      background: var(--bg-3);
+      border-radius: var(--radius-sm);
+      transition: all 300ms;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .reminder-item:hover {
+      background: var(--bg-4);
+    }
+
+    .reminder-time {
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      text-align: center;
+    }
+
+    .reminder-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .reminder-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .reminder-category {
+      font-size: 12px;
+      color: var(--text-3);
+    }
+
+    .reminder-action {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-xs);
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 300ms;
+      font-size: 14px;
+    }
+
+    .reminder-action:hover {
+      background: var(--bg-4);
+      border-color: var(--border-strong);
+    }
+
+    /* AJUSTES PAGE */
     .settings-section {
       margin-bottom: 32px;
     }
 
     .settings-section-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .category-item {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 12px;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      justify-content: space-between;
-    }
-
-    .category-item-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .category-item-icon {
-      font-size: 24px;
-    }
-
-    .category-item-info {
-      text-align: left;
-    }
-
-    .category-item-name {
+      font-size: 14px;
       font-weight: 600;
-      font-size: 13px;
-    }
-
-    .category-item-color {
-      width: 16px;
-      height: 16px;
-      border-radius: 4px;
-    }
-
-    .category-item-actions {
-      display: flex;
-      gap: 6px;
-    }
-
-    /* APPOINTMENTS VIEW */
-    .appointment-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-left: 4px solid;
-      border-radius: var(--radius);
-      padding: 16px;
+      color: var(--accent-light);
       margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
-    .appointment-time {
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .appointment-title {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .appointment-details {
-      font-size: 13px;
-      color: var(--text2);
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .calendar-section {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      margin-top: 24px;
-    }
-
-    .calendar-accounts {
+    .settings-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: 1fr auto;
       gap: 12px;
-      margin-top: 12px;
-    }
-
-    .calendar-account {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
       padding: 16px;
-      text-align: center;
-    }
-
-    /* EMPTY STATE */
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--text2);
-    }
-
-    .empty-state-icon {
-      font-size: 48px;
-      margin-bottom: 12px;
-    }
-
-    .empty-state-title {
-      font-size: 16px;
-      font-weight: 600;
+      background: var(--bg-3);
+      border-radius: var(--radius-sm);
+      align-items: center;
       margin-bottom: 8px;
+    }
+
+    .settings-label {
+      font-size: 14px;
+      font-weight: 500;
       color: var(--text);
     }
 
-    .empty-state-text {
-      font-size: 13px;
-      margin-bottom: 16px;
+    .settings-sublabel {
+      font-size: 12px;
+      color: var(--text-3);
+      margin-top: 4px;
     }
 
-    /* REMINDERS VIEW */
-    .reminder-card {
-      background: var(--card);
+    .settings-control {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .toggle-switch {
+      width: 48px;
+      height: 28px;
+      border-radius: 14px;
+      background: var(--bg-2);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 300ms;
+      position: relative;
+    }
+
+    .toggle-switch.on {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .toggle-switch-dot {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: white;
+      top: 2px;
+      left: 2px;
+      transition: left 300ms;
+    }
+
+    .toggle-switch.on .toggle-switch-dot {
+      left: 22px;
+    }
+
+    .settings-input {
+      padding: 8px 12px;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      color: var(--text);
+      font-size: 14px;
+      font-family: var(--font);
+      width: 80px;
+    }
+
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
       padding: 16px;
-      margin-bottom: 12px;
+      background: var(--bg-3);
+      border-radius: var(--radius);
+      margin-top: 12px;
+    }
+
+    .color-swatch {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-sm);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 300ms;
+    }
+
+    .color-swatch:hover {
+      transform: scale(1.05);
+    }
+
+    .color-swatch.selected {
+      border-color: var(--text);
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
+    }
+
+    .category-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .category-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg-3);
+      border-radius: var(--radius-sm);
+      align-items: center;
+    }
+
+    .category-icon {
+      font-size: 20px;
+      width: 24px;
+    }
+
+    .category-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .category-delete {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-xs);
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-2);
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: center;
+      transition: all 300ms;
     }
 
-    .reminder-time {
-      background: var(--accent);
+    .category-delete:hover {
+      background: var(--red);
+      border-color: var(--red);
       color: white;
-      padding: 8px 12px;
-      border-radius: var(--radius-sm);
-      font-weight: 600;
-      font-size: 12px;
-      min-width: 80px;
-      text-align: center;
     }
 
-    .reminder-info {
-      flex: 1;
-    }
-
-    .reminder-name {
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .reminder-meta {
-      display: flex;
-      gap: 12px;
-      font-size: 12px;
-      color: var(--text2);
-    }
-
-    /* MOBILE RESPONSIVE */
-    @media (max-width: 768px) {
-      .container {
+    /* MOBILE LAYOUT */
+    @media (max-width: 900px) {
+      .app-container {
         grid-template-columns: 1fr;
         grid-template-rows: 1fr var(--nav-h);
       }
@@ -1084,78 +1228,389 @@
         display: none;
       }
 
-      .aside {
+      .right-panel {
         display: none;
       }
 
-      .main {
-        padding: 20px;
-        overflow-y: auto;
-        border-right: none;
+      .main-content {
+        order: 1;
       }
 
       .mobile-nav {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0;
+        background: var(--bg-1);
+        border-top: 1px solid var(--border);
+        order: 2;
+      }
+
+      .mobile-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 8px;
+        cursor: pointer;
+        transition: all 300ms;
+        color: var(--text-2);
+        border-top: 2px solid transparent;
+        min-height: var(--nav-h);
+        justify-content: center;
+      }
+
+      .mobile-nav-item:hover,
+      .mobile-nav-item.active {
+        color: var(--accent-light);
+        background: var(--bg-2);
+        border-top-color: var(--accent);
+      }
+
+      .mobile-nav-icon {
+        font-size: 24px;
+      }
+
+      .mobile-nav-label {
+        font-size: 10px;
+        font-weight: 600;
+      }
+
+      .page-padding {
+        padding: 24px;
+        padding-bottom: 24px;
+      }
+
+      .main-scroll {
+        padding-bottom: var(--nav-h);
+      }
+
+      /* MODAL - BOTTOM SHEET ON MOBILE */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(4px);
+        z-index: 100;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 300ms;
+      }
+
+      .modal-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .modal {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
-        height: var(--nav-h);
-        background: var(--bg2);
-        border-top: 1px solid var(--border);
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        z-index: 50;
-      }
-
-      .nav-item {
+        max-height: 90vh;
+        background: var(--bg-1);
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        display: flex;
         flex-direction: column;
-        margin: 0;
-        padding: 8px;
-        border-radius: 0;
-        gap: 4px;
-        font-size: 10px;
-        text-align: center;
+        z-index: 101;
+        transform: translateY(100%);
+        transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
       }
 
-      .nav-icon {
-        font-size: 20px;
+      .modal-overlay.active .modal {
+        transform: translateY(0);
       }
 
-      .page-title {
-        font-size: 20px;
+      .modal-handle {
+        width: 48px;
+        height: 4px;
+        background: var(--border-strong);
+        border-radius: 2px;
+        margin: 12px auto;
       }
 
-      .category-grid {
-        grid-template-columns: repeat(3, 1fr);
+      .modal-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0 24px 24px 24px;
       }
 
-      .week-grid {
-        grid-template-columns: repeat(4, 1fr);
+      .modal-header {
+        padding: 16px 24px 0 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border);
       }
 
-      .timer-ring {
-        width: 150px;
-        height: 150px;
+      .modal-title {
+        font-size: 18px;
+        font-weight: 700;
       }
 
-      .timer-display {
-        font-size: 32px;
+      .modal-close {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-xs);
+        background: var(--bg-3);
+        border: 1px solid var(--border);
+        color: var(--text-2);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
     }
 
-    @media (max-width: 480px) {
-      .priority-grid {
-        grid-template-columns: 1fr;
+    /* DESKTOP MODAL */
+    @media (min-width: 901px) {
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 100;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 300ms;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
-      .category-grid {
-        grid-template-columns: repeat(2, 1fr);
+      .modal-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
       }
+
+      .modal {
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        background: var(--bg-1);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        z-index: 101;
+        transform: scale(0.95);
+        transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
+      }
+
+      .modal-overlay.active .modal {
+        transform: scale(1);
+      }
+
+      .modal-handle {
+        display: none;
+      }
+
+      .modal-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+      }
+
+      .modal-header {
+        padding: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .modal-title {
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      .mobile-nav {
+        display: none;
+      }
+    }
+
+    /* FORM ELEMENTS */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-2);
+      margin-bottom: 8px;
+    }
+
+    .form-input,
+    .form-textarea,
+    .form-select {
+      width: 100%;
+      padding: 12px;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      transition: all 300ms;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: var(--bg-4);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+      font-family: var(--font);
+    }
+
+    .form-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .form-tab {
+      padding: 12px;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-2);
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 300ms;
+      text-align: center;
+    }
+
+    .form-tab.active {
+      background: var(--accent-glow);
+      border-color: var(--accent);
+      color: var(--accent-light);
+    }
+
+    .chip-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+      gap: 8px;
+    }
+
+    .chip {
+      padding: 10px 12px;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      text-align: center;
+      font-size: 13px;
+      transition: all 300ms;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chip:hover {
+      background: var(--bg-4);
+      border-color: var(--border-strong);
+    }
+
+    .chip.selected {
+      background: var(--accent-glow);
+      border-color: var(--accent);
+      color: var(--accent-light);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--pink));
+      border: none;
+      border-radius: var(--radius-sm);
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 300ms;
+      margin-top: 12px;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    /* FAB - FLOATING ACTION BUTTON */
+    .fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--pink));
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-lg);
+      transition: all 300ms;
+      z-index: 50;
+    }
+
+    .fab:hover {
+      transform: scale(1.1);
+      box-shadow: 0 24px 64px rgba(124, 58, 237, 0.4);
+    }
+
+    .fab:active {
+      transform: scale(0.95);
+    }
+
+    @media (max-width: 900px) {
+      .fab {
+        bottom: calc(var(--nav-h) + 16px);
+        right: 16px;
+      }
+    }
+
+    /* UTILITIES */
+    .text-center {
+      text-align: center;
+    }
+
+    .mt-24 {
+      margin-top: 24px;
+    }
+
+    .hidden {
+      display: none !important;
     }
 
     /* SCROLLBAR */
     ::-webkit-scrollbar {
       width: 8px;
+      height: 8px;
     }
 
     ::-webkit-scrollbar-track {
@@ -1163,1731 +1618,438 @@
     }
 
     ::-webkit-scrollbar-thumb {
-      background: var(--border);
+      background: var(--bg-3);
       border-radius: 4px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-      background: var(--text3);
+      background: var(--bg-4);
     }
   </style>
 </head>
 <body>
-  <canvas id="particleCanvas"></canvas>
+  <canvas id="particles"></canvas>
 
-  <div class="container">
-    <!-- SIDEBAR -->
-    <nav class="sidebar">
-      <div class="logo">✨ FlowAI</div>
-      <div id="desktopNav">
-        <div class="nav-item active" data-view="today">
-          <span class="nav-icon">📅</span>
+  <div class="app-container">
+    <!-- DESKTOP SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">🚀</div>
+        <div class="sidebar-title">FlowAI</div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-item active" data-page="today">
+          <div class="nav-item-icon">📅</div>
           <span>Hoy</span>
         </div>
-        <div class="nav-item" data-view="week">
-          <span class="nav-icon">📆</span>
+        <div class="nav-item" data-page="week">
+          <div class="nav-item-icon">📊</div>
           <span>Semana</span>
         </div>
-        <div class="nav-item" data-view="appointments">
-          <span class="nav-icon">📍</span>
+        <div class="nav-item" data-page="appointments">
+          <div class="nav-item-icon">📅</div>
           <span>Citas</span>
         </div>
-        <div class="nav-item" data-view="gantt">
-          <span class="nav-icon">📊</span>
+        <div class="nav-item" data-page="projects">
+          <div class="nav-item-icon">🗂</div>
           <span>Proyectos</span>
         </div>
-        <div class="nav-item" data-view="reminders">
-          <span class="nav-icon">🔔</span>
+        <div class="nav-item" data-page="reminders">
+          <div class="nav-item-icon">🔔</div>
           <span>Recordatorios</span>
         </div>
-        <div class="nav-item" data-view="settings">
-          <span class="nav-icon">⚙️</span>
+        <div class="nav-item" data-page="settings">
+          <div class="nav-item-icon">⚙️</div>
           <span>Ajustes</span>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </aside>
 
-    <!-- MAIN AREA -->
-    <main class="main">
-      <!-- TODAY VIEW -->
-      <div id="todayView" class="view active">
-        <div class="page-title">📅 Hoy</div>
-
-        <div class="progress-section">
-          <div class="progress-title">Progreso del día</div>
-          <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-          </div>
-          <div class="progress-text" id="progressText">0 de 0 tareas completadas</div>
-        </div>
-
-        <div class="timeline" id="timelineGrid"></div>
-
-        <div style="display: flex; gap: 12px; margin-bottom: 24px;">
-          <button class="btn btn-primary" onclick="openModal()">+ Añadir Tarea</button>
-          <button class="btn btn-primary" onclick="openModal('appointment')">+ Añadir Cita</button>
-        </div>
-
-        <div id="todayTasksList"></div>
-      </div>
-
-      <!-- WEEK VIEW -->
-      <div id="weekView" class="view">
-        <div class="page-title">📆 Semana</div>
-        <div class="week-grid" id="weekGrid"></div>
-      </div>
-
-      <!-- APPOINTMENTS VIEW -->
-      <div id="appointmentsView" class="view">
-        <div class="page-title">📍 Citas</div>
-        <button class="btn btn-primary" onclick="openModal('appointment')" style="margin-bottom: 24px;">+ Añadir Cita</button>
-        <div id="appointmentsList"></div>
-
-        <div class="calendar-section">
-          <div class="settings-section-title">📅 Cuentas de Calendario</div>
-          <p style="font-size: 13px; color: var(--text2); margin-bottom: 16px;">Exporta tus citas como .ics para importarlas en cualquier calendario</p>
-          <div class="calendar-accounts">
-            <div class="calendar-account">
-              <div style="font-size: 28px; margin-bottom: 8px;">🔵</div>
-              <div style="font-weight: 600; margin-bottom: 8px;">Google Calendar</div>
-              <button class="btn btn-sm" onclick="showCalendarModal('google')">Conectar</button>
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <div class="main-scroll">
+        <!-- HOY PAGE -->
+        <div class="page active" data-page="today">
+          <div class="page-padding">
+            <div class="today-header">
+              <div>
+                <div class="today-greeting">Buenos días, Jorge 👋</div>
+                <div class="today-time">
+                  <span id="currentTime">09:42</span> · <span id="currentDate">Hoy</span>
+                </div>
+              </div>
             </div>
-            <div class="calendar-account">
-              <div style="font-size: 28px; margin-bottom: 8px;">🟦</div>
-              <div style="font-weight: 600; margin-bottom: 8px;">Outlook</div>
-              <button class="btn btn-sm" onclick="showCalendarModal('outlook')">Conectar</button>
+
+            <div class="progress-section">
+              <div class="progress-label">
+                <span id="progressText">0 de 0 tareas completadas</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+              </div>
             </div>
-            <div class="calendar-account">
-              <div style="font-size: 28px; margin-bottom: 8px;">🍎</div>
-              <div style="font-weight: 600; margin-bottom: 8px;">Apple Calendar</div>
-              <button class="btn btn-sm" onclick="showCalendarModal('apple')">Conectar</button>
+
+            <div class="timeline-section">
+              <div class="timeline-label">Timeline</div>
+              <div class="timeline" id="timelineContainer"></div>
+            </div>
+
+            <div class="tasks-section">
+              <div class="tasks-label">Tareas de hoy</div>
+              <div class="task-list" id="taskList"></div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- GANTT / PROJECTS VIEW -->
-      <div id="ganttView" class="view">
-        <div class="page-title">📊 Proyectos</div>
-        <button class="btn btn-primary" onclick="openModal('project')" style="margin-bottom: 24px;">+ Nuevo Proyecto</button>
-        <div id="ganttContainer"></div>
-      </div>
-
-      <!-- REMINDERS VIEW -->
-      <div id="remindersView" class="view">
-        <div class="page-title">🔔 Recordatorios</div>
-        <div class="card" style="margin-bottom: 24px;">
-          <button class="btn btn-primary" style="width: 100%;">🔊 Activar notificaciones</button>
+        <!-- SEMANA PAGE -->
+        <div class="page" data-page="week">
+          <div class="page-padding">
+            <h2 class="today-greeting" style="margin-bottom: 24px;">Esta semana</h2>
+            <div class="week-grid" id="weekGrid"></div>
+          </div>
         </div>
-        <div id="remindersList"></div>
-      </div>
 
-      <!-- SETTINGS VIEW -->
-      <div id="settingsView" class="view">
-        <div class="page-title">⚙️ Ajustes</div>
-        <div class="settings-container">
-          <!-- CATEGORÍAS -->
-          <div class="settings-section">
-            <div class="settings-section-title">🏷️ Categorías</div>
-            <div id="categoriesList"></div>
-            <button class="btn btn-primary" onclick="showAddCategoryModal()" style="width: 100%; margin-top: 12px;">+ Añadir Categoría</button>
+        <!-- CITAS PAGE -->
+        <div class="page" data-page="appointments">
+          <div class="page-padding">
+            <div class="appointments-header">
+              <h2 class="appointments-title">Citas</h2>
+            </div>
+            <div id="appointmentsContainer"></div>
           </div>
+        </div>
 
-          <!-- CALENDARIO -->
-          <div class="settings-section">
-            <div class="settings-section-title">📅 Calendario</div>
-            <button class="btn" onclick="exportAllData()" style="width: 100%; margin-bottom: 12px;">📥 Exportar como ICS</button>
+        <!-- PROYECTOS PAGE -->
+        <div class="page" data-page="projects">
+          <div class="page-padding">
+            <h2 class="today-greeting" style="margin-bottom: 24px;">Proyectos</h2>
+            <div class="projects-tabs">
+              <button class="projects-tab active" data-tab="kanban">Tablero</button>
+              <button class="projects-tab" data-tab="gantt">Gantt</button>
+            </div>
+            <div id="kanbanView"></div>
+            <div id="ganttView" class="hidden"></div>
           </div>
+        </div>
 
-          <!-- APARIENCIA -->
-          <div class="settings-section">
-            <div class="settings-section-title">🎨 Apariencia</div>
-            <div class="form-group">
-              <label>Nombre</label>
-              <input type="text" id="userName" placeholder="Tu nombre">
-            </div>
-            <div class="form-group">
-              <label>Formato de hora</label>
-              <select id="timeFormat">
-                <option value="12h">12 horas</option>
-                <option value="24h">24 horas</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Semana comienza en</label>
-              <select id="weekStart">
-                <option value="lunes">Lunes</option>
-                <option value="domingo">Domingo</option>
-              </select>
-            </div>
+        <!-- RECORDATORIOS PAGE -->
+        <div class="page" data-page="reminders">
+          <div class="page-padding">
+            <h2 class="today-greeting" style="margin-bottom: 24px;">Recordatorios</h2>
+            <div id="remindersContainer"></div>
           </div>
+        </div>
 
-          <!-- TEMPORIZADOR -->
-          <div class="settings-section">
-            <div class="settings-section-title">⏱️ Temporizador</div>
-            <div class="form-group">
-              <label>Duración de enfoque (minutos)</label>
-              <input type="number" id="focusDuration" min="1" max="120" value="25">
-            </div>
-            <div class="form-group">
-              <label>Duración de descanso (minutos)</label>
-              <input type="number" id="breakDuration" min="1" max="60" value="5">
-            </div>
-            <div class="form-group">
-              <label>Recordatorio antes de (minutos)</label>
-              <input type="number" id="reminderMinutes" min="1" max="60" value="5">
-            </div>
-          </div>
+        <!-- AJUSTES PAGE -->
+        <div class="page" data-page="settings">
+          <div class="page-padding">
+            <h2 class="today-greeting" style="margin-bottom: 24px;">Ajustes</h2>
 
-          <!-- RESPALDO -->
-          <div class="settings-section">
-            <div class="settings-section-title">💾 Respaldo</div>
-            <button class="btn" onclick="exportData()" style="width: 100%; margin-bottom: 12px;">📥 Exportar datos</button>
-            <button class="btn" onclick="importData()" style="width: 100%; margin-bottom: 12px;">📤 Importar datos</button>
-            <button class="btn btn-danger" onclick="deleteAllData()" style="width: 100%;">🗑️ Borrar todos los datos</button>
+            <div class="settings-section">
+              <div class="settings-section-title">Perfil</div>
+              <div class="settings-row">
+                <div>
+                  <div class="settings-label">Nombre</div>
+                  <div class="settings-sublabel">Tu nombre en la app</div>
+                </div>
+                <input type="text" class="settings-input" id="settingName" value="Jorge" placeholder="Nombre">
+              </div>
+              <div class="settings-row">
+                <div>
+                  <div class="settings-label">Email</div>
+                  <div class="settings-sublabel">Para notificaciones</div>
+                </div>
+                <input type="email" class="settings-input" id="settingEmail" placeholder="Email">
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <div class="settings-section-title">Categorías</div>
+              <div class="category-list" id="categoriesList"></div>
+              <button class="btn-primary">+ Añadir categoría</button>
+            </div>
+
+            <div class="settings-section">
+              <div class="settings-section-title">Notificaciones</div>
+              <div class="settings-row">
+                <div class="settings-label">Notificaciones del sistema</div>
+                <div class="toggle-switch" id="notificationToggle">
+                  <div class="toggle-switch-dot"></div>
+                </div>
+              </div>
+              <div class="settings-row">
+                <div class="settings-label">Sonido</div>
+                <div class="toggle-switch" id="soundToggle" class="on">
+                  <div class="toggle-switch-dot"></div>
+                </div>
+              </div>
+              <div class="settings-row">
+                <div class="settings-label">Vibración</div>
+                <div class="toggle-switch" id="vibrationToggle" class="on">
+                  <div class="toggle-switch-dot"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <div class="settings-section-title">Temporizador</div>
+              <div class="settings-row">
+                <div class="settings-label">Duración de enfoque</div>
+                <input type="number" class="settings-input" id="focusDuration" value="25" min="1" max="120">
+              </div>
+              <div class="settings-row">
+                <div class="settings-label">Duración de descanso</div>
+                <input type="number" class="settings-input" id="breakDuration" value="5" min="1" max="60">
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <div class="settings-section-title">Datos</div>
+              <button class="btn-primary" onclick="exportData()">📥 Descargar copia</button>
+              <button class="btn-primary" onclick="deleteAllData()" style="background: linear-gradient(135deg, var(--red), #dc2626);">🗑️ Borrar todo</button>
+            </div>
           </div>
         </div>
       </div>
     </main>
 
-    <!-- ASIDE (TIMER + AI) -->
-    <aside class="aside">
-      <!-- TIMER -->
-      <div class="timer-section">
-        <div class="timer-label" id="timerLabel">ENFOQUE</div>
-        <div class="timer-ring">
-          <div class="timer-display" id="timerDisplay">25:00</div>
+    <!-- RIGHT PANEL - DESKTOP ONLY -->
+    <aside class="right-panel">
+      <!-- TIMER SECTION -->
+      <div class="panel-section">
+        <div class="panel-title">Focus Timer</div>
+        <div class="timer-display">
+          <div class="timer-ring">
+            <svg viewBox="0 0 160 160">
+              <defs>
+                <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <circle cx="80" cy="80" r="80" class="timer-ring-bg" fill="none" stroke-width="4" />
+              <circle cx="80" cy="80" r="80" class="timer-ring-progress" fill="none" stroke-width="4" />
+            </svg>
+            <div class="timer-time" id="timerDisplay">25:00</div>
+          </div>
+          <div class="timer-label" id="timerLabel">ENFOQUE</div>
+          <div class="timer-task" id="timerTask">Sin tarea</div>
         </div>
-        <div class="timer-task" id="timerTaskName"></div>
+
         <div class="timer-controls">
-          <button class="timer-btn" onclick="toggleTimer()">▶ Iniciar</button>
-          <button class="timer-btn" onclick="resetTimer()">↻ Reiniciar</button>
-          <button class="timer-btn" onclick="skipTimer()">⏭️ Saltar</button>
+          <button class="timer-btn" title="Reset" id="timerReset">↺</button>
+          <button class="timer-btn" title="Play/Pause" id="timerPlayPause">▶</button>
+          <button class="timer-btn" title="Skip" id="timerSkip">⏭</button>
         </div>
-        <div style="display: flex; gap: 4px; justify-content: center;">
-          <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent); opacity: 0.3;" id="dot1"></span>
-          <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent); opacity: 0.3;" id="dot2"></span>
-          <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent); opacity: 0.3;" id="dot3"></span>
-          <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent); opacity: 0.3;" id="dot4"></span>
+
+        <div class="timer-stats">
+          Total: <span id="todayFocusTime">0h 0min</span>
         </div>
       </div>
 
-      <hr style="border: none; border-top: 1px solid var(--border); margin: 20px 0;">
-
-      <!-- AI CHAT -->
-      <div class="ai-section">
-        <div class="ai-header">🤖 AsistenteAI</div>
-        <button class="ai-quick-btn" onclick="analyzeDay()">Analizar mi día</button>
-        <div class="chat-messages" id="chatMessages"></div>
-        <div class="chat-input-group">
-          <input type="text" class="chat-input" id="chatInput" placeholder="Pregunta...">
-          <button class="chat-send" onclick="sendMessage()">→</button>
+      <!-- AI SECTION -->
+      <div class="panel-section">
+        <div class="panel-title">AI Assistant</div>
+        <div class="ai-avatar">🧠</div>
+        <div class="ai-response" id="aiResponse">
+          ¡Hola Jorge! Parece que tienes un día productivo. ¿Cómo puedo ayudarte?
+        </div>
+        <div class="ai-actions">
+          <button class="ai-action-btn" onclick="askAI('analyze')">📊 Analizar mi día</button>
+          <button class="ai-action-btn" onclick="askAI('suggest')">💡 Sugerencia</button>
+          <button class="ai-action-btn" onclick="askAI('organize')">🔄 Reorganizar</button>
         </div>
       </div>
     </aside>
   </div>
 
   <!-- MOBILE BOTTOM NAV -->
-  <nav class="mobile-nav" id="mobileNav" style="display: none;">
-    <div class="nav-item active" data-view="today">
-      <span class="nav-icon">📅</span>
-      <span>Hoy</span>
+  <nav class="mobile-nav">
+    <div class="mobile-nav-item active" data-page="today">
+      <div class="mobile-nav-icon">📅</div>
+      <div class="mobile-nav-label">Hoy</div>
     </div>
-    <div class="nav-item" data-view="week">
-      <span class="nav-icon">📆</span>
-      <span>Semana</span>
+    <div class="mobile-nav-item" data-page="week">
+      <div class="mobile-nav-icon">📊</div>
+      <div class="mobile-nav-label">Semana</div>
     </div>
-    <div class="nav-item" data-view="appointments">
-      <span class="nav-icon">📍</span>
-      <span>Citas</span>
+    <div class="mobile-nav-item" data-page="appointments">
+      <div class="mobile-nav-icon">📅</div>
+      <div class="mobile-nav-label">Citas</div>
     </div>
-    <div class="nav-item" data-view="gantt">
-      <span class="nav-icon">📊</span>
-      <span>Proyectos</span>
+    <div class="mobile-nav-item" data-page="projects">
+      <div class="mobile-nav-icon">🗂</div>
+      <div class="mobile-nav-label">Proyectos</div>
     </div>
-    <div class="nav-item" data-view="reminders">
-      <span class="nav-icon">🔔</span>
-      <span>Recordatorios</span>
-    </div>
-    <div class="nav-item" data-view="settings">
-      <span class="nav-icon">⚙️</span>
-      <span>Ajustes</span>
+    <div class="mobile-nav-item" id="mobileMoreBtn">
+      <div class="mobile-nav-icon">⋯</div>
+      <div class="mobile-nav-label">Más</div>
     </div>
   </nav>
 
+  <!-- FAB -->
+  <button class="fab" id="fabBtn" title="Nueva tarea">➕</button>
+
   <!-- MODAL -->
-  <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+  <div class="modal-overlay" id="modalOverlay">
     <div class="modal" id="modal">
-      <button class="modal-close" onclick="closeModal()">×</button>
-
-      <div class="modal-type-selector" id="typeSelector">
-        <button class="type-btn active" data-type="task">📋 Tarea</button>
-        <button class="type-btn" data-type="appointment">📅 Cita</button>
-        <button class="type-btn" data-type="project">🗂 Proyecto</button>
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Nueva tarea</h2>
+        <button class="modal-close" id="modalClose">✕</button>
       </div>
-
-      <!-- TASK FORM -->
-      <div id="taskForm" style="display: block;">
-        <div class="form-group">
-          <label>Nombre de la tarea</label>
-          <input type="text" id="taskName" placeholder="Ej: Revisar correos">
-        </div>
-
-        <div class="form-group">
-          <label>Notas (opcional)</label>
-          <textarea id="taskNotes" placeholder="Detalles adicionales..."></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>Duración</label>
-          <select id="taskDuration">
-            <option value="5">5 min</option>
-            <option value="10">10 min</option>
-            <option value="15">15 min</option>
-            <option value="25" selected>25 min</option>
-            <option value="30">30 min</option>
-            <option value="45">45 min</option>
-            <option value="55">55 min</option>
-            <option value="60">1 hora</option>
-            <option value="90">1.5 horas</option>
-            <option value="120">2 horas</option>
-          </select>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <div class="form-group">
-            <label>Fecha</label>
-            <input type="date" id="taskDate">
-          </div>
-          <div class="form-group">
-            <label>Hora</label>
-            <input type="time" id="taskTime">
-          </div>
-        </div>
-        <div style="font-size: 11px; color: var(--text2); margin-top: -8px; margin-bottom: 12px;">💡 Próximo espacio libre: <span id="nextSlot">—</span></div>
-
-        <div class="form-group">
-          <label>Categoría</label>
-          <div class="category-grid" id="taskCategoryGrid"></div>
-        </div>
-
-        <div class="form-group">
-          <label>Prioridad</label>
-          <div class="priority-grid">
-            <button class="priority-btn priority-high" data-priority="high">🔴 Alta</button>
-            <button class="priority-btn priority-medium selected" data-priority="medium">🟡 Media</button>
-            <button class="priority-btn priority-low" data-priority="low">🟢 Baja</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Repetición</label>
-          <select id="taskRecurring">
-            <option value="never">Nunca</option>
-            <option value="daily">Diario</option>
-            <option value="weekly">Semanal</option>
-            <option value="monthly">Mensual</option>
-          </select>
-        </div>
-
-        <button class="btn btn-primary" onclick="saveTask()" style="width: 100%; margin-top: 20px;">💾 Guardar Tarea</button>
-      </div>
-
-      <!-- APPOINTMENT FORM -->
-      <div id="appointmentForm" style="display: none;">
-        <div class="form-group">
-          <label>Título</label>
-          <input type="text" id="appointmentTitle" placeholder="Ej: Reunión con equipo">
-        </div>
-
-        <div class="form-group">
-          <label>Descripción/Notas</label>
-          <textarea id="appointmentDescription" placeholder="Detalles de la cita..."></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>Fecha</label>
-          <input type="date" id="appointmentDate">
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <div class="form-group">
-            <label>Hora inicio</label>
-            <input type="time" id="appointmentStartTime">
-          </div>
-          <div class="form-group">
-            <label>Hora fin</label>
-            <input type="time" id="appointmentEndTime">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Ubicación (opcional)</label>
-          <input type="text" id="appointmentLocation" placeholder="Oficina, café, etc.">
-        </div>
-
-        <div class="form-group">
-          <label>Enlace de video (opcional)</label>
-          <input type="url" id="appointmentVideoLink" placeholder="https://meet.google.com/...">
-        </div>
-
-        <div class="form-group">
-          <label>Asistentes (opcional)</label>
-          <input type="text" id="appointmentAttendees" placeholder="email1@gmail.com, email2@gmail.com">
-        </div>
-
-        <div class="form-group">
-          <label>Recordatorio</label>
-          <select id="appointmentReminder">
-            <option value="5">5 minutos antes</option>
-            <option value="10">10 minutos antes</option>
-            <option value="15">15 minutos antes</option>
-            <option value="30">30 minutos antes</option>
-            <option value="60">1 hora antes</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Color</label>
-          <div class="color-swatches">
-            <div class="swatch selected" style="background: #7c3aed;" data-color="#7c3aed"></div>
-            <div class="swatch" style="background: #06b6d4;" data-color="#06b6d4"></div>
-            <div class="swatch" style="background: #10b981;" data-color="#10b981"></div>
-            <div class="swatch" style="background: #f59e0b;" data-color="#f59e0b"></div>
-            <div class="swatch" style="background: #ef4444;" data-color="#ef4444"></div>
-            <div class="swatch" style="background: #ec4899;" data-color="#ec4899"></div>
-            <div class="swatch" style="background: #8b5cf6;" data-color="#8b5cf6"></div>
-            <div class="swatch" style="background: #f97316;" data-color="#f97316"></div>
-            <div class="swatch" style="background: #0ea5e9;" data-color="#0ea5e9"></div>
-            <div class="swatch" style="background: #84cc16;" data-color="#84cc16"></div>
-          </div>
-        </div>
-
-        <button class="btn btn-primary" onclick="saveAppointment()" style="width: 100%; margin-top: 20px;">💾 Guardar Cita</button>
-        <button class="btn btn-success" id="downloadIcsBtn" onclick="downloadICS()" style="width: 100%; margin-top: 8px; display: none;">📥 Agregar al calendario</button>
-      </div>
-
-      <!-- PROJECT FORM -->
-      <div id="projectForm" style="display: none;">
-        <div class="form-group">
-          <label>Nombre del proyecto</label>
-          <input type="text" id="projectName" placeholder="Ej: Rediseñar sitio web">
-        </div>
-
-        <div class="form-group">
-          <label>Descripción</label>
-          <textarea id="projectDescription" placeholder="Detalles del proyecto..."></textarea>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <div class="form-group">
-            <label>Fecha de inicio</label>
-            <input type="date" id="projectStartDate">
-          </div>
-          <div class="form-group">
-            <label>Fecha de fin</label>
-            <input type="date" id="projectEndDate">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Progreso (%)</label>
-          <input type="range" id="projectProgress" min="0" max="100" value="0" style="width: 100%;">
-          <div style="text-align: center; font-size: 13px; color: var(--text2); margin-top: 4px;"><span id="progressValue">0</span>%</div>
-        </div>
-
-        <div class="form-group">
-          <label>Equipo (opcional)</label>
-          <input type="text" id="projectTeam" placeholder="email1@gmail.com, email2@gmail.com">
-        </div>
-
-        <div class="form-group">
-          <label>Color</label>
-          <div class="color-swatches">
-            <div class="swatch selected" style="background: #7c3aed;" data-color="#7c3aed"></div>
-            <div class="swatch" style="background: #06b6d4;" data-color="#06b6d4"></div>
-            <div class="swatch" style="background: #10b981;" data-color="#10b981"></div>
-            <div class="swatch" style="background: #f59e0b;" data-color="#f59e0b"></div>
-            <div class="swatch" style="background: #ef4444;" data-color="#ef4444"></div>
-            <div class="swatch" style="background: #ec4899;" data-color="#ec4899"></div>
-            <div class="swatch" style="background: #8b5cf6;" data-color="#8b5cf6"></div>
-            <div class="swatch" style="background: #f97316;" data-color="#f97316"></div>
-            <div class="swatch" style="background: #0ea5e9;" data-color="#0ea5e9"></div>
-            <div class="swatch" style="background: #84cc16;" data-color="#84cc16"></div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Prioridad</label>
-          <div class="priority-grid">
-            <button class="priority-btn priority-high" data-priority="high">🔴 Alta</button>
-            <button class="priority-btn priority-medium selected" data-priority="medium">🟡 Media</button>
-            <button class="priority-btn priority-low" data-priority="low">🟢 Baja</button>
-          </div>
-        </div>
-
-        <button class="btn btn-primary" onclick="saveProject()" style="width: 100%; margin-top: 20px;">💾 Guardar Proyecto</button>
-      </div>
+      <div class="modal-scroll" id="modalContent"></div>
     </div>
   </div>
 
   <script>
-    // =====================
-    // DATA STRUCTURE
-    // =====================
+    // ========== DATA STRUCTURES ==========
+    const DEFAULT_CATEGORIES = [
+      { id: 'focus', name: 'Enfoque', icon: '🎯', color: '#7c3aed' },
+      { id: 'health', name: 'Salud', icon: '💪', color: '#10b981' },
+      { id: 'work', name: 'Trabajo', icon: '💻', color: '#06b6d4' },
+      { id: 'personal', name: 'Personal', icon: '✨', color: '#f59e0b' },
+      { id: 'project', name: 'Proyecto', icon: '🗂', color: '#ec4899' },
+      { id: 'study', name: 'Estudio', icon: '📚', color: '#8b5cf6' },
+    ];
+
     let tasks = [];
     let appointments = [];
     let projects = [];
-    let categories = [];
+    let categories = DEFAULT_CATEGORIES;
     let settings = {
-      userName: 'Usuario',
-      timeFormat: '24h',
-      weekStart: 'lunes',
+      name: 'Jorge',
+      email: '',
+      soundEnabled: true,
+      vibrationEnabled: true,
+      notificationsEnabled: true,
       focusDuration: 25,
       breakDuration: 5,
-      reminderMinutes: 5
     };
 
-    let currentEditingId = null;
-    let currentEditingType = null;
-    let selectedModalType = 'task';
-    let selectedTaskCategory = null;
-    let selectedTaskPriority = 'medium';
-    let selectedAppointmentColor = '#7c3aed';
-    let selectedProjectColor = '#7c3aed';
-    let selectedProjectPriority = 'medium';
-
     let timerRunning = false;
-    let timerSeconds = 1500;
     let timerMode = 'focus';
-    let pomodoroCount = 0;
-    let currentTaskForTimer = null;
+    let timerSeconds = 25 * 60;
+    let todayFocusSeconds = 0;
 
-    const defaultCategories = [
-      {id:'focus', name:'Enfoque', icon:'🎯', color:'#7c3aed'},
-      {id:'health', name:'Salud', icon:'💪', color:'#10b981'},
-      {id:'work', name:'Trabajo', icon:'💻', color:'#06b6d4'},
-      {id:'personal', name:'Personal', icon:'✨', color:'#f59e0b'},
-      {id:'project', name:'Proyecto', icon:'🗂', color:'#ec4899'},
-      {id:'study', name:'Estudio', icon:'📚', color:'#8b5cf6'},
-    ];
-
-    const emojiPicker = ['🎯','📚','💡','🔬','✍️','🎨','🏃','💪','🧘','💻','📊','📋','📧','🤝','🏢','💼','🔧','📱','✨','🌱','❤️','🏠','🍎','😊','🎵','📖','🌟','💊','🏋️','🥗','💤','🏊','🚴','📞','💬','📤','🗣️','🎬','🎮','🏆','🚀','⚡','🔥','💰','✈️','🎓','🧠','🔑'];
-
-    const colorSwatches = ['#7c3aed','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899','#8b5cf6','#f97316','#0ea5e9','#84cc16'];
-
-    const aiResponses = [
-      '¡Excelente progreso hoy! Mantén el ritmo.',
-      'Recuerda tomar descansos. Tu bienestar es importante.',
-      'Tienes 3 tareas pendientes. ¿Necesitas ayuda para priorizarlas?',
-      'La consistencia es clave. ¡Sigue así!',
-      'Análisis: Completaste 70% de tus tareas. Muy bien.',
-      '💡 Consejo: Agrupa tareas similares para ser más eficiente.',
-      'Tu enfoque ha mejorado esta semana. ¡Felicidades!',
-      'Recuerda: Calidad sobre cantidad. No te abrumes.'
-    ];
-
-    // =====================
-    // INITIALIZATION
-    // =====================
+    // ========== INITIALIZATION ==========
     function init() {
-      loadAllData();
-      setupResponsive();
-      setupParticles();
+      loadData();
+      initializeParticles();
       setupEventListeners();
-      renderTodayView();
-      updateTimerDisplay();
-      initChat();
-      setDefaultDates();
+      renderAll();
+      updateClock();
+      setInterval(updateClock, 1000);
+      setInterval(updateTimer, 1000);
+      initializeNotifications();
+      loadSampleData();
     }
 
-    function loadAllData() {
-      const saved = localStorage.getItem('flowai_tasks');
-      tasks = saved ? JSON.parse(saved) : getSampleTasks();
+    function loadData() {
+      const savedTasks = localStorage.getItem('flowai_tasks');
+      const savedAppointments = localStorage.getItem('flowai_appointments');
+      const savedProjects = localStorage.getItem('flowai_projects');
+      const savedCategories = localStorage.getItem('flowai_categories');
+      const savedSettings = localStorage.getItem('flowai_settings');
 
-      const savedApt = localStorage.getItem('flowai_appointments');
-      appointments = savedApt ? JSON.parse(savedApt) : getSampleAppointments();
-
-      const savedProj = localStorage.getItem('flowai_projects');
-      projects = savedProj ? JSON.parse(savedProj) : getSampleProjects();
-
-      const savedCat = localStorage.getItem('flowai_categories');
-      categories = savedCat ? JSON.parse(savedCat) : defaultCategories;
-
-      const savedSet = localStorage.getItem('flowai_settings');
-      settings = savedSet ? {...settings, ...JSON.parse(savedSet)} : settings;
+      if (savedTasks) tasks = JSON.parse(savedTasks);
+      if (savedAppointments) appointments = JSON.parse(savedAppointments);
+      if (savedProjects) projects = JSON.parse(savedProjects);
+      if (savedCategories) categories = JSON.parse(savedCategories);
+      if (savedSettings) settings = { ...settings, ...JSON.parse(savedSettings) };
     }
 
-    function getSampleTasks() {
-      const today = new Date().toISOString().split('T')[0];
-      return [
-        {id:1, name:'Revisar correos', date:today, time:'09:00', duration:15, category:'work', priority:'high', recurring:'never', notes:'', completed:false},
-        {id:2, name:'Sesión de ejercicio', date:today, time:'17:00', duration:45, category:'health', priority:'medium', recurring:'daily', notes:'', completed:false},
-        {id:3, name:'Estudiar React', date:today, time:'14:00', duration:60, category:'study', priority:'high', recurring:'never', notes:'', completed:false},
-        {id:4, name:'Llamar a cliente', date:today, time:'11:00', duration:30, category:'work', priority:'high', recurring:'never', notes:'', completed:false},
-        {id:5, name:'Meditación', date:today, time:'07:00', duration:10, category:'health', priority:'medium', recurring:'daily', notes:'', completed:false},
-        {id:6, name:'Proyecto personal', date:today, time:'19:00', duration:90, category:'personal', priority:'medium', recurring:'never', notes:'', completed:false},
-        {id:7, name:'Leer 30 min', date:today, time:'20:00', duration:30, category:'study', priority:'low', recurring:'weekly', notes:'', completed:false},
-        {id:8, name:'Planificación semanal', date:today, time:'18:00', duration:30, category:'focus', priority:'high', recurring:'weekly', notes:'', completed:false},
+    function saveData() {
+      localStorage.setItem('flowai_tasks', JSON.stringify(tasks));
+      localStorage.setItem('flowai_appointments', JSON.stringify(appointments));
+      localStorage.setItem('flowai_projects', JSON.stringify(projects));
+      localStorage.setItem('flowai_categories', JSON.stringify(categories));
+      localStorage.setItem('flowai_settings', JSON.stringify(settings));
+    }
+
+    function loadSampleData() {
+      if (tasks.length > 0) return;
+
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      tasks = [
+        { id: '1', name: 'Revisar emails', category: 'work', time: '09:00', date: today.toISOString().split('T')[0], duration: 15, priority: 'alta', completed: false },
+        { id: '2', name: 'Escribir documento', category: 'project', time: '10:00', date: today.toISOString().split('T')[0], duration: 60, priority: 'alta', completed: false },
+        { id: '3', name: 'Ejercicio', category: 'health', time: '07:00', date: today.toISOString().split('T')[0], duration: 30, priority: 'media', completed: false },
+        { id: '4', name: 'Llamada con cliente', category: 'work', time: '14:00', date: today.toISOString().split('T')[0], duration: 30, priority: 'alta', completed: false },
+        { id: '5', name: 'Preparar presentación', category: 'focus', time: '15:00', date: today.toISOString().split('T')[0], duration: 45, priority: 'alta', completed: false },
       ];
-    }
 
-    function getSampleAppointments() {
-      const today = new Date();
-      const tomorrow = new Date(today.getTime() + 86400000);
-      const dayAfter = new Date(today.getTime() + 172800000);
-
-      return [
-        {
-          id:101,
-          title:'Reunión de equipo',
-          description:'Sincronización semanal',
-          date:tomorrow.toISOString().split('T')[0],
-          startTime:'10:00',
-          endTime:'11:00',
-          location:'Sala 3',
-          videoLink:'',
-          attendees:'',
-          reminder:15,
-          color:'#06b6d4'
-        },
-        {
-          id:102,
-          title:'Presentación proyecto',
-          description:'Demo para stakeholders',
-          date:dayAfter.toISOString().split('T')[0],
-          startTime:'14:00',
-          endTime:'15:00',
-          location:'',
-          videoLink:'https://meet.google.com/abc',
-          attendees:'',
-          reminder:30,
-          color:'#7c3aed'
-        }
+      appointments = [
+        { id: 'a1', title: 'Team standup', description: 'Reunión diaria', date: tomorrow.toISOString().split('T')[0], startTime: '10:00', endTime: '10:30', location: 'Sala de reuniones', attendees: ['maria@example.com'], color: '#06b6d4' },
+        { id: 'a2', title: 'Brainstorm', description: 'Nuevas ideas', date: new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], startTime: '14:00', endTime: '15:30', location: 'Virtual', attendees: [], color: '#ec4899' },
       ];
-    }
 
-    function getSampleProjects() {
-      const today = new Date();
-      const start = new Date(today.getTime() - 172800000).toISOString().split('T')[0];
-      const end = new Date(today.getTime() + 864000000).toISOString().split('T')[0];
-
-      return [
-        {id:201, name:'Rediseño sitio web', description:'Modernizar interfaz', startDate:start, endDate:end, progress:45, team:'', color:'#7c3aed', priority:'high'},
-        {id:202, name:'Migración base datos', description:'Pasar a PostgreSQL', startDate:start, endDate:end, progress:70, team:'', color:'#06b6d4', priority:'medium'}
+      projects = [
+        { id: 'p1', name: 'App Redesign', description: 'Nueva interfaz', startDate: today.toISOString().split('T')[0], endDate: new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], progress: 60, team: [], color: '#7c3aed', priority: 'alta', status: 'in-progress' },
+        { id: 'p2', name: 'Documentation', description: 'Documentación técnica', startDate: today.toISOString().split('T')[0], endDate: new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], progress: 20, team: [], color: '#10b981', priority: 'media', status: 'todo' },
       ];
+
+      saveData();
     }
 
-    function setupResponsive() {
-      const isMobile = window.innerWidth < 768;
-      const sidebar = document.querySelector('.sidebar');
-      const aside = document.querySelector('.aside');
-      const mobileNav = document.getElementById('mobileNav');
-
-      if (isMobile) {
-        sidebar.style.display = 'none';
-        aside.style.display = 'none';
-        mobileNav.style.display = 'grid';
-      } else {
-        sidebar.style.display = 'flex';
-        aside.style.display = 'flex';
-        mobileNav.style.display = 'none';
-      }
-
-      window.addEventListener('resize', () => {
-        const newIsMobile = window.innerWidth < 768;
-        if (newIsMobile !== isMobile) location.reload();
-      });
-    }
-
-    function setupEventListeners() {
-      document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', (e) => {
-          const view = e.currentTarget.getAttribute('data-view');
-          switchView(view);
-        });
-      });
-
-      document.querySelectorAll('.type-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          selectedModalType = btn.getAttribute('data-type');
-          showModalForm(selectedModalType);
-        });
-      });
-
-      document.addEventListener('click', (e) => {
-        if (e.target.closest('.category-btn') && e.target.closest('#taskCategoryGrid')) {
-          document.querySelectorAll('#taskCategoryGrid .category-btn').forEach(b => b.classList.remove('selected'));
-          e.target.closest('.category-btn').classList.add('selected');
-          selectedTaskCategory = e.target.closest('.category-btn').getAttribute('data-id');
-        }
-      });
-
-      document.addEventListener('click', (e) => {
-        if (e.target.closest('.priority-btn')) {
-          const grid = e.target.closest('.priority-grid');
-          if (grid.closest('#taskForm')) {
-            grid.querySelectorAll('.priority-btn').forEach(b => b.classList.remove('selected'));
-            e.target.closest('.priority-btn').classList.add('selected');
-            selectedTaskPriority = e.target.closest('.priority-btn').getAttribute('data-priority');
-          } else if (grid.closest('#projectForm')) {
-            grid.querySelectorAll('.priority-btn').forEach(b => b.classList.remove('selected'));
-            e.target.closest('.priority-btn').classList.add('selected');
-            selectedProjectPriority = e.target.closest('.priority-btn').getAttribute('data-priority');
-          }
-        }
-      });
-
-      document.addEventListener('click', (e) => {
-        if (e.target.closest('.swatch')) {
-          const parent = e.target.closest('.color-swatches');
-          parent.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
-          e.target.closest('.swatch').classList.add('selected');
-          const color = e.target.closest('.swatch').getAttribute('data-color');
-          if (parent.closest('#appointmentForm')) {
-            selectedAppointmentColor = color;
-          } else if (parent.closest('#projectForm')) {
-            selectedProjectColor = color;
-          }
-        }
-      });
-
-      document.getElementById('chatInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendMessage();
-      });
-
-      const progressSlider = document.getElementById('projectProgress');
-      if (progressSlider) {
-        progressSlider.addEventListener('input', (e) => {
-          document.getElementById('progressValue').textContent = e.target.value;
-        });
-      }
-
-      document.getElementById('userName').addEventListener('change', (e) => {
-        settings.userName = e.target.value;
-        saveSettings();
-      });
-      document.getElementById('timeFormat').addEventListener('change', (e) => {
-        settings.timeFormat = e.target.value;
-        saveSettings();
-        renderTodayView();
-      });
-      document.getElementById('weekStart').addEventListener('change', (e) => {
-        settings.weekStart = e.target.value;
-        saveSettings();
-      });
-      document.getElementById('focusDuration').addEventListener('change', (e) => {
-        settings.focusDuration = parseInt(e.target.value);
-        saveSettings();
-      });
-      document.getElementById('breakDuration').addEventListener('change', (e) => {
-        settings.breakDuration = parseInt(e.target.value);
-        saveSettings();
-      });
-      document.getElementById('reminderMinutes').addEventListener('change', (e) => {
-        settings.reminderMinutes = parseInt(e.target.value);
-        saveSettings();
-      });
-
-      document.getElementById('userName').value = settings.userName;
-      document.getElementById('timeFormat').value = settings.timeFormat;
-      document.getElementById('weekStart').value = settings.weekStart;
-      document.getElementById('focusDuration').value = settings.focusDuration;
-      document.getElementById('breakDuration').value = settings.breakDuration;
-      document.getElementById('reminderMinutes').value = settings.reminderMinutes;
-    }
-
-    // =====================
-    // VIEW SWITCHING
-    // =====================
-    function switchView(viewName) {
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById(viewName + 'View').classList.add('active');
-
-      document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('data-view') === viewName) {
-          item.classList.add('active');
-        }
-      });
-
-      if (viewName === 'today') renderTodayView();
-      else if (viewName === 'week') renderWeekView();
-      else if (viewName === 'appointments') renderAppointmentsView();
-      else if (viewName === 'gantt') renderGanttView();
-      else if (viewName === 'reminders') renderRemindersView();
-      else if (viewName === 'settings') renderSettingsView();
-    }
-
-    // =====================
-    // VIEWS
-    // =====================
-    function renderTodayView() {
-      const today = new Date().toISOString().split('T')[0];
-      const todayTasks = tasks.filter(t => t.date === today).sort((a, b) => a.time.localeCompare(b.time));
-
-      const completed = todayTasks.filter(t => t.completed).length;
-      const total = todayTasks.length;
-      const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-      document.getElementById('progressFill').style.width = percent + '%';
-      document.getElementById('progressText').textContent = `${completed} de ${total} tareas completadas`;
-
-      const timeline = document.getElementById('timelineGrid');
-      timeline.innerHTML = '';
-      for (let h = 0; h < 24; h++) {
-        const block = document.createElement('div');
-        block.className = 'timeline-block';
-        block.textContent = h.toString().padStart(2, '0');
-        block.onclick = () => {
-          const time = h.toString().padStart(2, '0') + ':00';
-          document.getElementById('taskTime').value = time;
-          openModal();
-        };
-        timeline.appendChild(block);
-      }
-
-      const list = document.getElementById('todayTasksList');
-      if (todayTasks.length === 0) {
-        list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">Sin tareas hoy</div><div class="empty-state-text">¡Perfecto! Descansa o añade una nueva</div></div>';
-      } else {
-        list.innerHTML = todayTasks.map(task => {
-          const cat = categories.find(c => c.id === task.category) || categories[0];
-          const bgColor = task.completed ? 'rgba(16, 185, 129, 0.15)' : 'var(--card)';
-          return `
-            <div class="task-card" style="background: ${bgColor}; border-color: ${task.completed ? 'rgba(16, 185, 129, 0.5)' : 'var(--border)'};">
-              <div class="task-category-icon">${cat.icon}</div>
-              <div class="task-content">
-                <div class="task-name" style="text-decoration: ${task.completed ? 'line-through' : 'none'}; color: ${task.completed ? 'var(--text2)' : 'var(--text)'};">${task.name}</div>
-                <div class="task-meta">
-                  ${task.date && task.date !== new Date().toISOString().split('T')[0] ? `<div class="task-time" style="color:var(--accent2)">📅 ${task.date}</div>` : ''}
-                  <div class="task-time">🕐 ${task.time}</div>
-                  <div class="task-duration">${task.duration}m</div>
-                  <div class="priority-dot" style="background: ${task.priority === 'high' ? 'var(--danger)' : task.priority === 'medium' ? 'var(--warning)' : 'var(--success)'};"></div>
-                </div>
-              </div>
-              <div class="task-actions">
-                <button class="task-btn" onclick="startTimer(${task.id})" title="Iniciar temporizador">▶</button>
-                <button class="task-btn" onclick="toggleTask(${task.id})" title="${task.completed ? 'Desmarcar' : 'Completar'}">${task.completed ? '✓' : '○'}</button>
-                <button class="task-btn" onclick="editTask(${task.id})" title="Editar">✎</button>
-                <button class="task-btn" onclick="deleteTask(${task.id})" title="Eliminar">🗑</button>
-              </div>
-            </div>
-          `;
-        }).join('');
-      }
-    }
-
-    function renderWeekView() {
-      const today = new Date();
-      const startOfWeek = new Date(today);
-      const weekStart = settings.weekStart === 'lunes' ? 1 : 0;
-      const day = startOfWeek.getDay();
-      startOfWeek.setDate(startOfWeek.getDate() - (day === 0 ? 6 : day - weekStart));
-
-      const grid = document.getElementById('weekGrid');
-      grid.innerHTML = '';
-
-      const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-      if (weekStart === 0) dayNames.unshift(dayNames.pop());
-
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(startOfWeek);
-        d.setDate(d.getDate() + i);
-        const dateStr = d.toISOString().split('T')[0];
-        const isToday = dateStr === new Date().toISOString().split('T')[0];
-        const dayTasks = tasks.filter(t => t.date === dateStr);
-
-        const card = document.createElement('div');
-        card.className = 'day-card' + (isToday ? ' today' : '');
-        card.innerHTML = `
-          <div class="day-name">${dayNames[i]}</div>
-          <div class="day-date">${d.getDate()}</div>
-          ${dayTasks.length > 0 ? '<div class="day-indicator"></div>' : ''}
-        `;
-        grid.appendChild(card);
-      }
-    }
-
-    function renderAppointmentsView() {
-      const sorted = appointments.slice().sort((a, b) => new Date(a.date + 'T' + a.startTime) - new Date(b.date + 'T' + b.startTime));
-
-      let currentDate = null;
-      let html = '';
-
-      sorted.forEach(apt => {
-        if (apt.date !== currentDate) {
-          if (currentDate !== null) html += '</div>';
-          currentDate = apt.date;
-          const d = new Date(apt.date + 'T00:00:00');
-          html += `<div style="margin-bottom: 16px;"><div style="font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 8px;">${d.toLocaleDateString('es-ES', {weekday:'long', month:'long', day:'numeric'})}</div>`;
-        }
-
-        html += `
-          <div class="appointment-card" style="border-left-color: ${apt.color};">
-            <div class="appointment-time">${apt.startTime} - ${apt.endTime}</div>
-            <div class="appointment-title">${apt.title}</div>
-            <div class="appointment-details">
-              ${apt.location ? `<span>📍 ${apt.location}</span>` : ''}
-              ${apt.videoLink ? `<span>🎥 Video</span>` : ''}
-              ${apt.attendees ? `<span>👥 ${apt.attendees.split(',').length} asistentes</span>` : ''}
-            </div>
-            <div style="margin-top: 12px; display: flex; gap: 8px;">
-              <button class="btn btn-sm" onclick="editAppointment(${apt.id})">✎ Editar</button>
-              <button class="btn btn-sm" onclick="downloadAppointmentICS(${apt.id})">📥 ICS</button>
-              <button class="btn btn-sm" onclick="deleteAppointment(${apt.id})">🗑 Eliminar</button>
-            </div>
-          </div>
-        `;
-      });
-
-      if (currentDate !== null) html += '</div>';
-
-      const list = document.getElementById('appointmentsList');
-      list.innerHTML = html || '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">Sin citas</div></div>';
-    }
-
-    function renderGanttView() {
-      const projs = projects.filter(p => p.startDate && p.endDate);
-
-      if (projs.length === 0) {
-        document.getElementById('ganttContainer').innerHTML = '<div class="empty-state"><div class="empty-state-icon">📊</div><div class="empty-state-title">Sin proyectos</div><div class="empty-state-text">Crea tu primer proyecto →</div></div>';
-        return;
-      }
-
-      const today = new Date();
-      const startDate = new Date(today);
-      startDate.setDate(startDate.getDate() - 5);
-
-      let html = '<div class="gantt-container"><div class="gantt-header"><div></div>';
-      for (let i = 0; i < 30; i++) {
-        const d = new Date(startDate);
-        d.setDate(d.getDate() + i);
-        html += `<div class="gantt-day">${d.getDate()}</div>`;
-      }
-      html += '</div>';
-
-      projs.forEach(proj => {
-        const start = new Date(proj.startDate);
-        const end = new Date(proj.endDate);
-        const barStart = Math.max(0, Math.floor((start - startDate) / 86400000));
-        const barWidth = Math.ceil((end - start) / 86400000) + 1;
-
-        html += `<div class="gantt-row">
-          <div class="gantt-label">${proj.name}</div>`;
-
-        for (let i = 0; i < 30; i++) {
-          if (i === Math.floor((today - startDate) / 86400000)) {
-            html += `<div class="gantt-cell"><div class="gantt-today"></div></div>`;
-          } else if (i >= barStart && i < barStart + barWidth) {
-            const progressPercent = i === barStart ? (100 * proj.progress / 100) : (i === barStart + barWidth - 1 ? (100 * proj.progress / 100) : 100);
-            html += `<div class="gantt-cell"><div class="gantt-bar" style="width: ${(progressPercent / 100) * 95}%; background: linear-gradient(90deg, ${proj.color}, ${proj.color}dd);">${i === barStart ? proj.progress + '%' : ''}</div></div>`;
-          } else {
-            html += `<div class="gantt-cell"></div>`;
-          }
-        }
-        html += `<div style="display: flex; gap: 8px; padding-left: 12px;">
-          <button class="btn btn-sm" onclick="editProject(${proj.id})">✎</button>
-          <button class="btn btn-sm" onclick="deleteProject(${proj.id})">🗑</button>
-        </div></div>`;
-      });
-
-      html += '</div>';
-      document.getElementById('ganttContainer').innerHTML = html;
-    }
-
-    function renderRemindersView() {
-      const today = new Date().toISOString().split('T')[0];
-      const pending = tasks.filter(t => t.date >= today && !t.completed && t.time).sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
-
-      const pendingApt = appointments.filter(a => a.date >= today).sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
-
-      const combined = [
-        ...pending.map(t => ({type: 'task', ...t})),
-        ...pendingApt.map(a => ({type: 'appointment', date: a.date, startTime: a.startTime, title: a.title}))
-      ].sort((a, b) => a.date.localeCompare(b.date) || (a.startTime || a.time).localeCompare(b.startTime || b.time));
-
-      const list = document.getElementById('remindersList');
-      if (combined.length === 0) {
-        list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎉</div><div class="empty-state-title">¡Sin recordatorios!</div></div>';
-      } else {
-        list.innerHTML = combined.map(item => {
-          if (item.type === 'task') {
-            const cat = categories.find(c => c.id === item.category) || categories[0];
-            return `
-              <div class="reminder-card">
-                <div class="reminder-time">${item.time}</div>
-                <div class="reminder-info">
-                  <div class="reminder-name">${item.name}</div>
-                  <div class="reminder-meta">
-                    <span>${cat.name}</span>
-                    ${item.priority === 'high' ? '<span style="color: var(--danger);">🔴 Alta</span>' : item.priority === 'medium' ? '<span style="color: var(--warning);">🟡 Media</span>' : '<span style="color: var(--success);">🟢 Baja</span>'}
-                  </div>
-                </div>
-              </div>
-            `;
-          } else {
-            return `
-              <div class="reminder-card">
-                <div class="reminder-time">${item.startTime}</div>
-                <div class="reminder-info">
-                  <div class="reminder-name">${item.title}</div>
-                  <div class="reminder-meta">
-                    <span>📅 Cita</span>
-                  </div>
-                </div>
-              </div>
-            `;
-          }
-        }).join('');
-      }
-    }
-
-    function renderSettingsView() {
-      const catList = document.getElementById('categoriesList');
-      catList.innerHTML = categories.map(cat => `
-        <div class="category-item">
-          <div class="category-item-left">
-            <div class="category-item-icon">${cat.icon}</div>
-            <div class="category-item-info">
-              <div class="category-item-name">${cat.name}</div>
-              <div class="category-item-color" style="background: ${cat.color};"></div>
-            </div>
-          </div>
-          <div class="category-item-actions">
-            <button class="btn btn-sm" onclick="editCategory('${cat.id}')">✎</button>
-            <button class="btn btn-sm btn-danger" onclick="deleteCategory('${cat.id}')">🗑</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // =====================
-    // MODAL & FORMS
-    // =====================
-    function openModal(type = 'task', id = null) {
-      selectedModalType = type || 'task';
-      currentEditingId = id;
-      currentEditingType = type;
-
-      const todayStr = new Date().toISOString().split('T')[0];
-      document.getElementById('taskName').value = '';
-      document.getElementById('taskNotes').value = '';
-      document.getElementById('taskDuration').value = '25';
-      document.getElementById('taskDate').value = todayStr;
-      document.getElementById('taskTime').value = '09:00';
-      document.getElementById('taskRecurring').value = 'never';
-      document.getElementById('appointmentTitle').value = '';
-      document.getElementById('appointmentDescription').value = '';
-      document.getElementById('appointmentLocation').value = '';
-      document.getElementById('appointmentVideoLink').value = '';
-      document.getElementById('appointmentAttendees').value = '';
-      document.getElementById('appointmentReminder').value = '15';
-      document.getElementById('projectName').value = '';
-      document.getElementById('projectDescription').value = '';
-      document.getElementById('projectStartDate').value = '';
-      document.getElementById('projectEndDate').value = '';
-      document.getElementById('projectProgress').value = '0';
-      document.getElementById('projectTeam').value = '';
-      document.getElementById('progressValue').textContent = '0';
-
-      selectedTaskCategory = categories[0].id;
-      selectedTaskPriority = 'medium';
-      selectedAppointmentColor = '#7c3aed';
-      selectedProjectColor = '#7c3aed';
-      selectedProjectPriority = 'medium';
-
-      renderCategoryGrid();
-      renderTaskPriorityGrid();
-      renderAppointmentColorSwatches();
-      renderProjectForm();
-
-      if (id) {
-        if (type === 'task') {
-          const task = tasks.find(t => t.id === id);
-          if (task) {
-            document.getElementById('taskName').value = task.name;
-            document.getElementById('taskNotes').value = task.notes || '';
-            document.getElementById('taskDuration').value = task.duration;
-            document.getElementById('taskDate').value = task.date || new Date().toISOString().split('T')[0];
-            document.getElementById('taskTime').value = task.time || '09:00';
-            document.getElementById('taskRecurring').value = task.recurring || 'never';
-            selectedTaskCategory = task.category;
-            selectedTaskPriority = task.priority;
-            renderCategoryGrid();
-            renderTaskPriorityGrid();
-          }
-        } else if (type === 'appointment') {
-          const apt = appointments.find(a => a.id === id);
-          if (apt) {
-            document.getElementById('appointmentTitle').value = apt.title;
-            document.getElementById('appointmentDescription').value = apt.description;
-            document.getElementById('appointmentDate').value = apt.date;
-            document.getElementById('appointmentStartTime').value = apt.startTime;
-            document.getElementById('appointmentEndTime').value = apt.endTime;
-            document.getElementById('appointmentLocation').value = apt.location;
-            document.getElementById('appointmentVideoLink').value = apt.videoLink;
-            document.getElementById('appointmentAttendees').value = apt.attendees;
-            document.getElementById('appointmentReminder').value = apt.reminder;
-            selectedAppointmentColor = apt.color;
-            renderAppointmentColorSwatches();
-          }
-        } else if (type === 'project') {
-          const proj = projects.find(p => p.id === id);
-          if (proj) {
-            document.getElementById('projectName').value = proj.name;
-            document.getElementById('projectDescription').value = proj.description;
-            document.getElementById('projectStartDate').value = proj.startDate;
-            document.getElementById('projectEndDate').value = proj.endDate;
-            document.getElementById('projectProgress').value = proj.progress;
-            document.getElementById('projectTeam').value = proj.team;
-            document.getElementById('progressValue').textContent = proj.progress;
-            selectedProjectColor = proj.color;
-            selectedProjectPriority = proj.priority;
-            renderProjectForm();
-          }
-        }
-      } else {
-        setDefaultDates();
-      }
-
-      showModalForm(selectedModalType);
-      document.getElementById('modalOverlay').classList.add('active');
-    }
-
-    function showModalForm(type) {
-      document.getElementById('taskForm').style.display = type === 'task' ? 'block' : 'none';
-      document.getElementById('appointmentForm').style.display = type === 'appointment' ? 'block' : 'none';
-      document.getElementById('projectForm').style.display = type === 'project' ? 'block' : 'none';
-
-      document.querySelectorAll('.type-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelector(`[data-type="${type}"]`).classList.add('active');
-
-      if (type === 'appointment') {
-        document.getElementById('downloadIcsBtn').style.display = 'none';
-      }
-    }
-
-    function closeModal() {
-      document.getElementById('modalOverlay').classList.remove('active');
-      currentEditingId = null;
-      currentEditingType = null;
-    }
-
-    function closeModalOnOverlay(e) {
-      if (e.target === document.getElementById('modalOverlay')) closeModal();
-    }
-
-    function renderCategoryGrid() {
-      const grid = document.getElementById('taskCategoryGrid');
-      grid.innerHTML = categories.map(cat => `
-        <button class="category-btn ${selectedTaskCategory === cat.id ? 'selected' : ''}" data-id="${cat.id}">
-          <div class="category-icon">${cat.icon}</div>
-          <div>${cat.name}</div>
-        </button>
-      `).join('');
-    }
-
-    function renderTaskPriorityGrid() {
-      document.querySelectorAll('#taskForm .priority-btn').forEach(btn => {
-        btn.classList.remove('selected');
-        if (btn.getAttribute('data-priority') === selectedTaskPriority) {
-          btn.classList.add('selected');
-        }
-      });
-    }
-
-    function renderAppointmentColorSwatches() {
-      const parent = document.querySelector('#appointmentForm .color-swatches');
-      parent.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
-      parent.querySelector(`[data-color="${selectedAppointmentColor}"]`).classList.add('selected');
-    }
-
-    function renderProjectForm() {
-      document.querySelectorAll('#projectForm .priority-btn').forEach(btn => {
-        btn.classList.remove('selected');
-        if (btn.getAttribute('data-priority') === selectedProjectPriority) {
-          btn.classList.add('selected');
-        }
-      });
-
-      const parent = document.querySelector('#projectForm .color-swatches');
-      parent.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
-      parent.querySelector(`[data-color="${selectedProjectColor}"]`).classList.add('selected');
-    }
-
-    function setDefaultDates() {
-      const today = new Date();
-      const todayStr = today.toISOString().split('T')[0];
-      document.getElementById('appointmentDate').value = todayStr;
-      document.getElementById('projectStartDate').value = todayStr;
-      document.getElementById('projectEndDate').value = todayStr;
-    }
-
-    // =====================
-    // SAVE FUNCTIONS
-    // =====================
-    function saveTask() {
-      const name = document.getElementById('taskName').value.trim();
-      if (!name) { alert('Ingresa un nombre'); return; }
-
-      const time = document.getElementById('taskTime').value || '09:00';
-      const today = new Date().toISOString().split('T')[0];
-      const date = document.getElementById('taskDate').value || today;
-
-      if (currentEditingId) {
-        const task = tasks.find(t => t.id === currentEditingId);
-        if (task) {
-          task.name = name;
-          task.notes = document.getElementById('taskNotes').value;
-          task.duration = parseInt(document.getElementById('taskDuration').value);
-          task.date = date;
-          task.time = time;
-          task.category = selectedTaskCategory;
-          task.priority = selectedTaskPriority;
-          task.recurring = document.getElementById('taskRecurring').value;
-        }
-      } else {
-        tasks.push({
-          id: Date.now(),
-          name, notes: document.getElementById('taskNotes').value,
-          date,
-          time,
-          duration: parseInt(document.getElementById('taskDuration').value),
-          category: selectedTaskCategory,
-          priority: selectedTaskPriority,
-          recurring: document.getElementById('taskRecurring').value,
-          completed: false
-        });
-      }
-
-      saveTasks();
-      closeModal();
-      renderTodayView();
-    }
-
-    function saveAppointment() {
-      const title = document.getElementById('appointmentTitle').value.trim();
-      if (!title) { alert('Ingresa un título'); return; }
-
-      const date = document.getElementById('appointmentDate').value;
-      const startTime = document.getElementById('appointmentStartTime').value || '10:00';
-      const endTime = document.getElementById('appointmentEndTime').value || '11:00';
-
-      if (currentEditingId) {
-        const apt = appointments.find(a => a.id === currentEditingId);
-        if (apt) {
-          apt.title = title;
-          apt.description = document.getElementById('appointmentDescription').value;
-          apt.date = date;
-          apt.startTime = startTime;
-          apt.endTime = endTime;
-          apt.location = document.getElementById('appointmentLocation').value;
-          apt.videoLink = document.getElementById('appointmentVideoLink').value;
-          apt.attendees = document.getElementById('appointmentAttendees').value;
-          apt.reminder = parseInt(document.getElementById('appointmentReminder').value);
-          apt.color = selectedAppointmentColor;
-        }
-      } else {
-        appointments.push({
-          id: Math.max(...appointments.map(a => a.id), 0) + 1,
-          title,
-          description: document.getElementById('appointmentDescription').value,
-          date,
-          startTime,
-          endTime,
-          location: document.getElementById('appointmentLocation').value,
-          videoLink: document.getElementById('appointmentVideoLink').value,
-          attendees: document.getElementById('appointmentAttendees').value,
-          reminder: parseInt(document.getElementById('appointmentReminder').value),
-          color: selectedAppointmentColor
-        });
-      }
-
-      saveAppointments();
-      document.getElementById('downloadIcsBtn').style.display = currentEditingId ? 'block' : 'none';
-      if (!currentEditingId) closeModal();
-      renderAppointmentsView();
-    }
-
-    function saveProject() {
-      const name = document.getElementById('projectName').value.trim();
-      if (!name) { alert('Ingresa un nombre'); return; }
-
-      if (currentEditingId) {
-        const proj = projects.find(p => p.id === currentEditingId);
-        if (proj) {
-          proj.name = name;
-          proj.description = document.getElementById('projectDescription').value;
-          proj.startDate = document.getElementById('projectStartDate').value;
-          proj.endDate = document.getElementById('projectEndDate').value;
-          proj.progress = parseInt(document.getElementById('projectProgress').value);
-          proj.team = document.getElementById('projectTeam').value;
-          proj.color = selectedProjectColor;
-          proj.priority = selectedProjectPriority;
-        }
-      } else {
-        projects.push({
-          id: Math.max(...projects.map(p => p.id), 0) + 1,
-          name,
-          description: document.getElementById('projectDescription').value,
-          startDate: document.getElementById('projectStartDate').value,
-          endDate: document.getElementById('projectEndDate').value,
-          progress: parseInt(document.getElementById('projectProgress').value),
-          team: document.getElementById('projectTeam').value,
-          color: selectedProjectColor,
-          priority: selectedProjectPriority
-        });
-      }
-
-      saveProjects();
-      closeModal();
-      renderGanttView();
-    }
-
-    function saveTasks() { localStorage.setItem('flowai_tasks', JSON.stringify(tasks)); }
-    function saveAppointments() { localStorage.setItem('flowai_appointments', JSON.stringify(appointments)); }
-    function saveProjects() { localStorage.setItem('flowai_projects', JSON.stringify(projects)); }
-    function saveCategories() { localStorage.setItem('flowai_categories', JSON.stringify(categories)); }
-    function saveSettings() { localStorage.setItem('flowai_settings', JSON.stringify(settings)); }
-
-    // =====================
-    // DELETE/EDIT FUNCTIONS
-    // =====================
-    function deleteTask(id) {
-      if (confirm('¿Eliminar esta tarea?')) {
-        tasks = tasks.filter(t => t.id !== id);
-        saveTasks();
-        renderTodayView();
-      }
-    }
-
-    function editTask(id) { openModal('task', id); }
-
-    function toggleTask(id) {
-      const task = tasks.find(t => t.id === id);
-      if (task) {
-        task.completed = !task.completed;
-        saveTasks();
-        renderTodayView();
-      }
-    }
-
-    function deleteAppointment(id) {
-      if (confirm('¿Eliminar esta cita?')) {
-        appointments = appointments.filter(a => a.id !== id);
-        saveAppointments();
-        renderAppointmentsView();
-      }
-    }
-
-    function editAppointment(id) { openModal('appointment', id); }
-
-    function deleteProject(id) {
-      if (confirm('¿Eliminar este proyecto?')) {
-        projects = projects.filter(p => p.id !== id);
-        saveProjects();
-        renderGanttView();
-      }
-    }
-
-    function editProject(id) { openModal('project', id); }
-
-    function deleteCategory(id) {
-      if (id === 'focus' || id === 'work' || id === 'study' || id === 'health' || id === 'personal' || id === 'project') {
-        alert('No puedes eliminar categorías por defecto');
-        return;
-      }
-      if (confirm('¿Eliminar categoría?')) {
-        categories = categories.filter(c => c.id !== id);
-        saveCategories();
-        renderSettingsView();
-        renderCategoryGrid();
-      }
-    }
-
-    function editCategory(id) {
-      const cat = categories.find(c => c.id === id);
-      if (!cat) return;
-
-      const name = prompt('Nuevo nombre:', cat.name);
-      if (!name) return;
-
-      cat.name = name;
-      saveCategories();
-      renderSettingsView();
-      renderCategoryGrid();
-    }
-
-    // =====================
-    // CATEGORY MODAL
-    // =====================
-    function showAddCategoryModal() {
-      const nameInput = prompt('Nombre de categoría:');
-      if (!nameInput) return;
-
-      let selectedEmoji = null;
-      let selectedColor = '#7c3aed';
-
-      const overlay = document.createElement('div');
-      overlay.className = 'modal-overlay active';
-      overlay.innerHTML = `
-        <div class="modal">
-          <button class="modal-close" onclick="this.parentElement.parentElement.remove()">×</button>
-          <h3 style="margin-bottom: 16px;">Selecciona un emoji</h3>
-          <div class="emoji-grid">
-            ${emojiPicker.map((e, i) => `<button class="emoji-btn" onclick="selectCategoryEmoji('${e}')">${e}</button>`).join('')}
-          </div>
-          <h3 style="margin-top: 20px; margin-bottom: 16px;">Selecciona un color</h3>
-          <div class="color-swatches">
-            ${colorSwatches.map(c => `<div class="swatch" style="background: ${c};" onclick="selectCategoryColor('${c}')"></div>`).join('')}
-          </div>
-          <button class="btn btn-primary" onclick="confirmAddCategory('${nameInput}')" style="width: 100%; margin-top: 20px;">Añadir</button>
-        </div>
-      `;
-      document.body.appendChild(overlay);
-
-      window.selectCategoryEmoji = (e) => {
-        selectedEmoji = e;
-        document.querySelectorAll('.emoji-btn').forEach(b => {
-          if (b.textContent === e) b.style.background = 'var(--card-hover)';
-          else b.style.background = 'var(--bg)';
-        });
-      };
-
-      window.selectCategoryColor = (c) => {
-        selectedColor = c;
-        document.querySelectorAll('.color-swatches .swatch').forEach(s => {
-          if (s.style.background === c) s.classList.add('selected');
-          else s.classList.remove('selected');
-        });
-      };
-
-      window.confirmAddCategory = (name) => {
-        if (!selectedEmoji) {
-          alert('Selecciona un emoji');
-          return;
-        }
-        const id = 'cat_' + Date.now();
-        categories.push({id, name, icon: selectedEmoji, color: selectedColor});
-        saveCategories();
-        overlay.remove();
-        renderSettingsView();
-        renderCategoryGrid();
-      };
-    }
-
-    // =====================
-    // CALENDAR INTEGRATION
-    // =====================
-    function showCalendarModal(provider) {
-      alert(`Instrucciones para conectar ${provider === 'google' ? 'Google Calendar' : provider === 'outlook' ? 'Outlook' : 'Apple Calendar'}:\n\n1. Copia el enlace .ics de una cita\n2. Abre tu calendario ${provider}\n3. Importa o suscríbete al enlace .ics`);
-    }
-
-    function downloadAppointmentICS(id) {
-      const apt = appointments.find(a => a.id === id);
-      if (apt) generateICS(apt);
-    }
-
-    function downloadICS() {
-      const apt = {
-        id: Date.now(),
-        title: document.getElementById('appointmentTitle').value,
-        date: document.getElementById('appointmentDate').value,
-        startTime: document.getElementById('appointmentStartTime').value,
-        endTime: document.getElementById('appointmentEndTime').value,
-        location: document.getElementById('appointmentLocation').value,
-        description: document.getElementById('appointmentDescription').value,
-        attendees: document.getElementById('appointmentAttendees').value
-      };
-      generateICS(apt);
-    }
-
-    function generateICS(apt) {
-      const fmtDate = (dateStr, timeStr) => {
-        const dt = new Date(dateStr + 'T' + timeStr + ':00');
-        return dt.toISOString().replace(/[-:.]/g, '').slice(0, 15) + 'Z';
-      };
-
-      const lines = [
-        'BEGIN:VCALENDAR',
-        'VERSION:2.0',
-        'PRODID:-//FlowAI//EN',
-        'METHOD:REQUEST',
-        'BEGIN:VEVENT',
-        'UID:' + apt.id + '@flowai.app',
-        'DTSTART:' + fmtDate(apt.date, apt.startTime),
-        'DTEND:' + fmtDate(apt.date, apt.endTime),
-        'SUMMARY:' + apt.title,
-        apt.location ? 'LOCATION:' + apt.location : null,
-        apt.description ? 'DESCRIPTION:' + apt.description : null,
-        ...(apt.attendees ? apt.attendees.split(',').map(e => 'ATTENDEE:mailto:' + e.trim()) : []),
-        'END:VEVENT',
-        'END:VCALENDAR'
-      ].filter(Boolean).join('\r\n');
-
-      const blob = new Blob([lines], {type: 'text/calendar;charset=utf-8'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = apt.title.replace(/\s+/g, '-') + '.ics';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    // =====================
-    // EXPORT/IMPORT/DELETE
-    // =====================
-    function exportData() {
-      const data = {
-        tasks, appointments, projects, categories, settings,
-        exportDate: new Date().toISOString()
-      };
-      const json = JSON.stringify(data, null, 2);
-      const blob = new Blob([json], {type: 'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'flowai-backup-' + new Date().toISOString().split('T')[0] + '.json';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function exportAllData() {
-      exportData();
-    }
-
-    function importData() {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'application/json';
-      input.onchange = (e) => {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          try {
-            const data = JSON.parse(event.target.result);
-            tasks = data.tasks || [];
-            appointments = data.appointments || [];
-            projects = data.projects || [];
-            categories = data.categories || defaultCategories;
-            settings = data.settings || settings;
-            saveTasks();
-            saveAppointments();
-            saveProjects();
-            saveCategories();
-            saveSettings();
-            alert('✓ Datos importados correctamente');
-            location.reload();
-          } catch (err) {
-            alert('Error al importar: ' + err.message);
-          }
-        };
-        reader.readAsText(file);
-      };
-      input.click();
-    }
-
-    function deleteAllData() {
-      if (confirm('⚠️ ¿Eliminar TODOS los datos? Esta acción no se puede deshacer.')) {
-        if (confirm('Confirma: ¿Seguro que deseas eliminar TODO?')) {
-          localStorage.clear();
-          location.reload();
-        }
-      }
-    }
-
-    // =====================
-    // TIMER
-    // =====================
-    function updateTimerDisplay() {
-      const mins = Math.floor(timerSeconds / 60);
-      const secs = timerSeconds % 60;
-      document.getElementById('timerDisplay').textContent =
-        mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
-    }
-
-    function toggleTimer() {
-      timerRunning = !timerRunning;
-      if (timerRunning) {
-        const interval = setInterval(() => {
-          if (!timerRunning) {
-            clearInterval(interval);
-            return;
-          }
-          timerSeconds--;
-          updateTimerDisplay();
-          if (timerSeconds <= 0) {
-            clearInterval(interval);
-            timerRunning = false;
-            completeTimer();
-          }
-        }, 1000);
-      }
-    }
-
-    function resetTimer() {
-      timerRunning = false;
-      timerMode = 'focus';
-      timerSeconds = settings.focusDuration * 60;
-      document.getElementById('timerLabel').textContent = 'ENFOQUE';
-      updateTimerDisplay();
-    }
-
-    function skipTimer() {
-      timerRunning = false;
-      if (timerMode === 'focus') {
-        pomodoroCount++;
-        timerMode = 'break';
-        timerSeconds = settings.breakDuration * 60;
-        document.getElementById('timerLabel').textContent = 'DESCANSO';
-      } else {
-        timerMode = 'focus';
-        timerSeconds = settings.focusDuration * 60;
-        document.getElementById('timerLabel').textContent = 'ENFOQUE';
-      }
-      updatePomodoroDots();
-      updateTimerDisplay();
-    }
-
-    function completeTimer() {
-      if (timerMode === 'focus') {
-        skipTimer();
-        alert('¡Sesión completada! Tiempo de descanso.');
-      } else {
-        skipTimer();
-        alert('¡Descanso completado! Vuelve a trabajar.');
-      }
-    }
-
-    function startTimer(taskId) {
-      const task = tasks.find(t => t.id === taskId);
-      if (task) {
-        currentTaskForTimer = task;
-        document.getElementById('timerTaskName').textContent = task.name;
-        timerSeconds = task.duration * 60;
-        timerMode = 'focus';
-        pomodoroCount = 0;
-        document.getElementById('timerLabel').textContent = 'ENFOQUE';
-        updateTimerDisplay();
-        updatePomodoroDots();
-      }
-    }
-
-    function updatePomodoroDots() {
-      const dots = [document.getElementById('dot1'), document.getElementById('dot2'), document.getElementById('dot3'), document.getElementById('dot4')];
-      dots.forEach((dot, i) => {
-        dot.style.opacity = i < pomodoroCount ? '1' : '0.3';
-      });
-    }
-
-    // =====================
-    // AI CHAT
-    // =====================
-    function initChat() {
-      const messages = document.getElementById('chatMessages');
-      messages.innerHTML = `<div class="chat-message ai">¡Hola! Soy tu asistente de productividad. Te ayudaré a optimizar tu tiempo y alcanzar tus metas. ¿Cómo va tu día hoy?</div>`;
-    }
-
-    function sendMessage() {
-      const input = document.getElementById('chatInput');
-      const text = input.value.trim();
-      if (!text) return;
-
-      const messages = document.getElementById('chatMessages');
-      const msg = document.createElement('div');
-      msg.className = 'chat-message';
-      msg.textContent = text;
-      messages.appendChild(msg);
-
-      input.value = '';
-
-      setTimeout(() => {
-        const response = document.createElement('div');
-        response.className = 'chat-message ai';
-        response.textContent = aiResponses[Math.floor(Math.random() * aiResponses.length)];
-        messages.appendChild(response);
-        messages.scrollTop = messages.scrollHeight;
-      }, 600);
-    }
-
-    function analyzeDay() {
-      const today = new Date().toISOString().split('T')[0];
-      const todayTasks = tasks.filter(t => t.date === today);
-      const completed = todayTasks.filter(t => t.completed).length;
-      const messages = document.getElementById('chatMessages');
-
-      const msg = document.createElement('div');
-      msg.className = 'chat-message';
-      msg.textContent = 'Analizar mi día';
-      messages.appendChild(msg);
-
-      setTimeout(() => {
-        const response = document.createElement('div');
-        response.className = 'chat-message ai';
-        response.innerHTML = `<strong>Análisis de hoy:</strong><br>
-          Tareas completadas: ${completed}/${todayTasks.length}<br>
-          Productividad: ${todayTasks.length > 0 ? Math.round((completed/todayTasks.length)*100) : 0}%<br>
-          Enfoque: Buena consistencia esta semana.`;
-        messages.appendChild(response);
-        messages.scrollTop = messages.scrollHeight;
-      }, 600);
-    }
-
-    // =====================
-    // PARTICLES
-    // =====================
-    function setupParticles() {
-      const canvas = document.getElementById('particleCanvas');
+    // ========== PARTICLES BACKGROUND ==========
+    function initializeParticles() {
+      const canvas = document.getElementById('particles');
       const ctx = canvas.getContext('2d');
 
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
 
-      let particles = [];
-      for (let i = 0; i < 50; i++) {
+      const particles = [];
+      const particleCount = 40;
+
+      for (let i = 0; i < particleCount; i++) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
           vx: (Math.random() - 0.5) * 0.5,
           vy: (Math.random() - 0.5) * 0.5,
-          r: Math.random() * 2 + 1
+          color: Math.random() > 0.5 ? '#7c3aed' : '#06b6d4',
         });
       }
 
-      const animate = () => {
-        ctx.fillStyle = 'rgba(7, 7, 14, 0.1)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = 'rgba(124, 58, 237, 0.5)';
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        particles.forEach(p => {
+        particles.forEach((p, i) => {
           p.x += p.vx;
           p.y += p.vy;
-          if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-          if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-          ctx.fillRect(p.x, p.y, p.r, p.r);
-        });
 
-        ctx.strokeStyle = 'rgba(6, 182, 212, 0.2)';
-        ctx.lineWidth = 1;
-        for (let i = 0; i < particles.length; i++) {
-          for (let j = i + 1; j < particles.length; j++) {
-            const dx = particles[i].x - particles[j].x;
-            const dy = particles[i].y - particles[j].y;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            if (dist < 100) {
+          if (p.x < 0) p.x = canvas.width;
+          if (p.x > canvas.width) p.x = 0;
+          if (p.y < 0) p.y = canvas.height;
+          if (p.y > canvas.height) p.y = 0;
+
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x, p.y, 2, 2);
+
+          particles.forEach((p2, j) => {
+            if (i >= j) return;
+            const dx = p.x - p2.x;
+            const dy = p.y - p2.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < 150) {
+              ctx.strokeStyle = `rgba(124, 58, 237, ${0.1 * (1 - dist / 150)})`;
+              ctx.lineWidth = 1;
               ctx.beginPath();
-              ctx.moveTo(particles[i].x, particles[i].y);
-              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(p2.x, p2.y);
               ctx.stroke();
             }
-          }
-        }
+          });
+        });
 
         requestAnimationFrame(animate);
-      };
+      }
+
       animate();
 
       window.addEventListener('resize', () => {
@@ -2896,10 +2058,841 @@
       });
     }
 
-    // =====================
-    // INIT
-    // =====================
-    window.addEventListener('DOMContentLoaded', init);
+    // ========== EVENT LISTENERS ==========
+    function setupEventListeners() {
+      document.querySelectorAll('[data-page]').forEach(item => {
+        item.addEventListener('click', (e) => {
+          const page = e.currentTarget.getAttribute('data-page');
+          if (page) navigateTo(page);
+        });
+      });
+
+      document.getElementById('mobileMoreBtn').addEventListener('click', showMoreMenu);
+
+      document.getElementById('fabBtn').addEventListener('click', openNewItemModal);
+      document.getElementById('modalClose').addEventListener('click', closeModal);
+      document.getElementById('modalOverlay').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('modalOverlay')) closeModal();
+      });
+
+      document.getElementById('timerPlayPause').addEventListener('click', toggleTimer);
+      document.getElementById('timerReset').addEventListener('click', resetTimer);
+      document.getElementById('timerSkip').addEventListener('click', skipTimer);
+
+      document.getElementById('settingName').addEventListener('change', (e) => {
+        settings.name = e.target.value;
+        saveData();
+      });
+
+      document.getElementById('focusDuration').addEventListener('change', (e) => {
+        settings.focusDuration = parseInt(e.target.value);
+        timerSeconds = settings.focusDuration * 60;
+        saveData();
+      });
+
+      const toggles = [
+        { el: 'notificationToggle', key: 'notificationsEnabled' },
+        { el: 'soundToggle', key: 'soundEnabled' },
+        { el: 'vibrationToggle', key: 'vibrationEnabled' },
+      ];
+
+      toggles.forEach(({ el, key }) => {
+        document.getElementById(el).addEventListener('click', () => {
+          settings[key] = !settings[key];
+          document.getElementById(el).classList.toggle('on');
+          saveData();
+        });
+      });
+
+      document.querySelectorAll('.projects-tab').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('.projects-tab').forEach(b => b.classList.remove('active'));
+          e.target.classList.add('active');
+          const tab = e.target.getAttribute('data-tab');
+          const kanban = document.getElementById('kanbanView');
+          const gantt = document.getElementById('ganttView');
+          if (tab === 'kanban') {
+            kanban.classList.remove('hidden');
+            gantt.classList.add('hidden');
+          } else {
+            kanban.classList.add('hidden');
+            gantt.classList.remove('hidden');
+          }
+        });
+      });
+    }
+
+    function navigateTo(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelector(`[data-page="${page}"].page`).classList.add('active');
+
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+      document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('active');
+
+      document.querySelectorAll('.mobile-nav-item').forEach(item => item.classList.remove('active'));
+      document.querySelector(`.mobile-nav-item[data-page="${page}"]`)?.classList.add('active');
+
+      renderPage(page);
+    }
+
+    function renderPage(page) {
+      switch (page) {
+        case 'today': renderToday(); break;
+        case 'week': renderWeek(); break;
+        case 'appointments': renderAppointments(); break;
+        case 'projects': renderProjects(); break;
+        case 'reminders': renderReminders(); break;
+        case 'settings': renderSettings(); break;
+      }
+    }
+
+    function renderAll() {
+      renderToday();
+    }
+
+    // ========== CLOCK ==========
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('currentTime').textContent = `${hours}:${minutes}`;
+
+      const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+      const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+      const dayName = days[now.getDay()];
+      const day = now.getDate();
+      const monthName = months[now.getMonth()];
+
+      if (isToday(now.toISOString().split('T')[0])) {
+        document.getElementById('currentDate').textContent = 'Hoy';
+      } else {
+        document.getElementById('currentDate').textContent = `${dayName}, ${day} de ${monthName}`;
+      }
+    }
+
+    // ========== TIMER ==========
+    function updateTimer() {
+      if (!timerRunning) return;
+
+      timerSeconds--;
+      if (timerSeconds < 0) {
+        timerSeconds = 0;
+        timerRunning = false;
+        playSound('timer_end');
+        if (settings.vibrationEnabled) navigator.vibrate?.([ 100, 50, 100, 50, 100 ]);
+        sendNotification('Timer completado', `Tu sesión de ${timerMode} ha terminado`);
+
+        if (timerMode === 'focus') {
+          todayFocusSeconds += settings.focusDuration * 60;
+          timerMode = 'break';
+          timerSeconds = settings.breakDuration * 60;
+          document.getElementById('timerLabel').textContent = 'DESCANSO';
+        } else {
+          timerMode = 'focus';
+          timerSeconds = settings.focusDuration * 60;
+          document.getElementById('timerLabel').textContent = 'ENFOQUE';
+        }
+        updateTimerDisplay();
+      } else {
+        updateTimerDisplay();
+      }
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(timerSeconds / 60);
+      const secs = timerSeconds % 60;
+      document.getElementById('timerDisplay').textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+      const totalSeconds = timerMode === 'focus' ? settings.focusDuration * 60 : settings.breakDuration * 60;
+      const progress = (totalSeconds - timerSeconds) / totalSeconds;
+      const ring = document.querySelector('.timer-ring-progress');
+      ring.style.strokeDashoffset = 502.4 * (1 - progress);
+
+      const hours = Math.floor(todayFocusSeconds / 3600);
+      const mins2 = Math.floor((todayFocusSeconds % 3600) / 60);
+      document.getElementById('todayFocusTime').textContent = `${hours}h ${mins2}min`;
+    }
+
+    function toggleTimer() {
+      timerRunning = !timerRunning;
+      document.getElementById('timerPlayPause').textContent = timerRunning ? '⏸' : '▶';
+      if (timerRunning) playSound('add');
+    }
+
+    function resetTimer() {
+      timerRunning = false;
+      timerSeconds = settings.focusDuration * 60;
+      timerMode = 'focus';
+      document.getElementById('timerPlayPause').textContent = '▶';
+      document.getElementById('timerLabel').textContent = 'ENFOQUE';
+      updateTimerDisplay();
+    }
+
+    function skipTimer() {
+      timerSeconds = 0;
+      updateTimer();
+    }
+
+    // ========== TODAY PAGE ==========
+    function renderToday() {
+      const today = new Date().toISOString().split('T')[0];
+      const todayTasks = tasks.filter(t => t.date === today).sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+
+      const completed = todayTasks.filter(t => t.completed).length;
+      document.getElementById('progressText').textContent = `${completed} de ${todayTasks.length} tareas completadas`;
+      document.getElementById('progressBar').style.width = todayTasks.length > 0 ? `${(completed / todayTasks.length) * 100}%` : '0%';
+
+      const timelineHTML = Array.from({ length: 17 }, (_, i) => {
+        const hour = i + 6;
+        const taskCount = todayTasks.filter(t => parseInt(t.time.split(':')[0]) === hour).length;
+        const now = new Date();
+        const isCurrentHour = now.getHours() === hour;
+
+        return `<div class="timeline-block ${isCurrentHour ? 'current' : ''} ${taskCount > 0 ? 'has-tasks' : ''}">${hour}</div>`;
+      }).join('');
+      document.getElementById('timelineContainer').innerHTML = timelineHTML;
+
+      const taskHTML = todayTasks.map((task, idx) => {
+        const cat = categories.find(c => c.id === task.category) || categories[0];
+        return `
+          <div class="task-card ${task.completed ? 'completed' : ''}" style="animation-delay: ${idx * 50}ms">
+            <div class="task-checkbox" onclick="toggleTask('${task.id}')" style="color: ${task.completed ? 'white' : 'transparent'}">✓</div>
+            <div class="task-content">
+              <div class="task-name">${task.name}</div>
+              <div class="task-meta">
+                <div class="task-category" style="border-color: ${cat.color}40"><span>${cat.icon}</span><span>${cat.name}</span></div>
+                <div class="task-time">${task.time}</div>
+                ${task.duration ? `<div class="task-duration">${task.duration}min</div>` : ''}
+              </div>
+            </div>
+            <div class="task-actions">
+              <button class="action-btn" onclick="focusTask('${task.id}')">▶</button>
+              <button class="action-btn" onclick="editTask('${task.id}')">✎</button>
+              <button class="action-btn" onclick="deleteTask('${task.id}')">⋯</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      document.getElementById('taskList').innerHTML = taskHTML || '<p style="color: var(--text-3); text-align: center; padding: 32px;">No hay tareas para hoy. ¡Descansa!</p>';
+    }
+
+    function toggleTask(id) {
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        task.completed = !task.completed;
+        playSound('complete');
+        if (settings.vibrationEnabled) navigator.vibrate?.([50]);
+        saveData();
+        renderToday();
+      }
+    }
+
+    function focusTask(id) {
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        document.getElementById('timerTask').textContent = task.name;
+        timerSeconds = task.duration ? task.duration * 60 : settings.focusDuration * 60;
+        updateTimerDisplay();
+        playSound('add');
+      }
+    }
+
+    function editTask(id) {
+      const task = tasks.find(t => t.id === id);
+      if (task) openEditTaskModal(task);
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      saveData();
+      renderToday();
+      playSound('notification');
+    }
+
+    // ========== WEEK PAGE ==========
+    function renderWeek() {
+      const today = new Date();
+      const weekHTML = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date(today);
+        date.setDate(date.getDate() - date.getDay() + i);
+        const dateStr = date.toISOString().split('T')[0];
+        const dayName = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][date.getDay()];
+        const dayNum = date.getDate();
+
+        const dayTasks = tasks.filter(t => t.date === dateStr);
+        const isToday = dateStr === today.toISOString().split('T')[0];
+
+        return `
+          <div class="day-card ${isToday ? 'today' : ''}">
+            <div class="day-name">${dayName}</div>
+            <div class="day-date">${dayNum}</div>
+            <div class="day-count">${dayTasks.length} tareas</div>
+            <div class="day-tasks">
+              ${dayTasks.slice(0, 2).map(t => `<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">• ${t.name}</div>`).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+      document.getElementById('weekGrid').innerHTML = weekHTML;
+    }
+
+    // ========== APPOINTMENTS PAGE ==========
+    function renderAppointments() {
+      const grouped = {};
+      appointments.forEach(apt => {
+        if (!grouped[apt.date]) grouped[apt.date] = [];
+        grouped[apt.date].push(apt);
+      });
+
+      let html = '';
+      Object.keys(grouped).sort().forEach(date => {
+        const dateObj = new Date(date + 'T00:00:00');
+        const dayName = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][dateObj.getDay()];
+        const formatted = `${dayName}, ${dateObj.getDate()}`;
+
+        html += `<div class="appointment-section">
+          <div class="appointment-date-label">${formatted}</div>
+          <div class="appointment-list">
+            ${grouped[date].map(apt => `
+              <div class="appointment-card">
+                <div class="appointment-color" style="background: ${apt.color}"></div>
+                <div class="appointment-info">
+                  <div class="appointment-time">${apt.startTime} - ${apt.endTime}</div>
+                  <div class="appointment-name">${apt.title}</div>
+                  <div class="appointment-details">
+                    ${apt.location ? `<div class="appointment-detail">📍 ${apt.location}</div>` : ''}
+                    ${apt.attendees && apt.attendees.length > 0 ? `<div class="appointment-attendees">${apt.attendees.slice(0, 2).map(a => `<div class="avatar-small" title="${a}">${a.charAt(0).toUpperCase()}</div>`).join('')}${apt.attendees.length > 2 ? `<div style="font-size: 12px; color: var(--text-3);">+${apt.attendees.length - 2}</div>` : ''}</div>` : ''}
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+      });
+
+      document.getElementById('appointmentsContainer').innerHTML = html || '<p style="color: var(--text-3); text-align: center; padding: 32px;">Sin citas próximas</p>';
+    }
+
+    // ========== PROJECTS PAGE ==========
+    function renderProjects() {
+      const kanbanHTML = `
+        <div class="kanban-board">
+          <div class="kanban-column">
+            <div class="kanban-title">Por hacer</div>
+            <div class="kanban-cards">${projects.filter(p => p.status === 'todo').map(p => projectCard(p)).join('')}</div>
+          </div>
+          <div class="kanban-column">
+            <div class="kanban-title">En progreso</div>
+            <div class="kanban-cards">${projects.filter(p => p.status === 'in-progress').map(p => projectCard(p)).join('')}</div>
+          </div>
+          <div class="kanban-column">
+            <div class="kanban-title">Completado</div>
+            <div class="kanban-cards">${projects.filter(p => p.status === 'completed').map(p => projectCard(p)).join('')}</div>
+          </div>
+        </div>
+      `;
+      document.getElementById('kanbanView').innerHTML = kanbanHTML;
+
+      const ganttHTML = `
+        <div class="gantt-container">
+          <div class="gantt-chart">${projects.map(p => ganttRow(p)).join('')}</div>
+        </div>
+      `;
+      document.getElementById('ganttView').innerHTML = ganttHTML;
+    }
+
+    function projectCard(p) {
+      return `
+        <div class="project-card" style="border-top-color: ${p.color}">
+          <div class="project-name">${p.name}</div>
+          <div class="project-progress">
+            <div class="progress-percent">${p.progress}%</div>
+            <div class="progress-bar-sm"><div class="progress-fill-sm" style="width: ${p.progress}%; background: ${p.color}"></div></div>
+          </div>
+          <div class="project-meta">
+            <span>${p.team.length} miembros</span>
+            <span>${daysUntil(p.endDate)} días</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function ganttRow(p) {
+      const startDate = new Date(p.startDate);
+      const today = new Date();
+      return `
+        <div class="gantt-row">
+          <div class="gantt-label">${p.name}</div>
+          <div class="gantt-timeline">
+            ${Array.from({ length: 30 }, (_, i) => {
+              const date = new Date(startDate);
+              date.setDate(date.getDate() + i);
+              const dateStr = date.toISOString().split('T')[0];
+              const isToday = dateStr === today.toISOString().split('T')[0];
+              return `<div class="gantt-day ${isToday ? 'today' : ''}"></div>`;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // ========== REMINDERS PAGE ==========
+    function renderReminders() {
+      const allItems = [...tasks.map(t => ({ ...t, type: 'task' })), ...appointments.map(a => ({ ...a, type: 'appointment' }))];
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
+      const weekFrom = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+      const todayItems = allItems.filter(i => i.date === today);
+      const weekItems = allItems.filter(i => i.date > today && i.date <= weekFrom);
+      const laterItems = allItems.filter(i => i.date > weekFrom);
+
+      let html = '';
+      if (todayItems.length > 0) {
+        html += `<div class="reminders-group"><div class="reminders-group-title">Hoy</div>${todayItems.map(item => reminderItem(item)).join('')}</div>`;
+      }
+      if (weekItems.length > 0) {
+        html += `<div class="reminders-group"><div class="reminders-group-title">Esta semana</div>${weekItems.map(item => reminderItem(item)).join('')}</div>`;
+      }
+      if (laterItems.length > 0) {
+        html += `<div class="reminders-group"><div class="reminders-group-title">Más tarde</div>${laterItems.map(item => reminderItem(item)).join('')}</div>`;
+      }
+
+      document.getElementById('remindersContainer').innerHTML = html || '<p style="color: var(--text-3); text-align: center; padding: 32px;">Sin recordatorios</p>';
+    }
+
+    function reminderItem(item) {
+      const time = item.time || item.startTime || '—';
+      const name = item.name || item.title;
+      return `
+        <div class="reminder-item">
+          <div class="reminder-time">${time}</div>
+          <div class="reminder-content">
+            <div class="reminder-title">${name}</div>
+            <div class="reminder-category">${item.type === 'task' ? '📌 Tarea' : '📅 Cita'}</div>
+          </div>
+          <button class="reminder-action" onclick="focusReminder('${item.id}')">→</button>
+        </div>
+      `;
+    }
+
+    function focusReminder(id) {
+      const task = tasks.find(t => t.id === id);
+      if (task) focusTask(id);
+    }
+
+    // ========== SETTINGS PAGE ==========
+    function renderSettings() {
+      document.getElementById('settingName').value = settings.name;
+      document.getElementById('settingEmail').value = settings.email || '';
+      document.getElementById('focusDuration').value = settings.focusDuration;
+      document.getElementById('breakDuration').value = settings.breakDuration;
+
+      document.getElementById('notificationToggle').classList.toggle('on', settings.notificationsEnabled);
+      document.getElementById('soundToggle').classList.toggle('on', settings.soundEnabled);
+      document.getElementById('vibrationToggle').classList.toggle('on', settings.vibrationEnabled);
+
+      const catHTML = categories.map(cat => `
+        <div class="category-item">
+          <div class="category-icon">${cat.icon}</div>
+          <div class="category-name">${cat.name}</div>
+          <button class="category-delete" onclick="deleteCategory('${cat.id}')">✕</button>
+        </div>
+      `).join('');
+      document.getElementById('categoriesList').innerHTML = catHTML;
+    }
+
+    function deleteCategory(id) {
+      if (confirm('¿Eliminar esta categoría?')) {
+        categories = categories.filter(c => c.id !== id);
+        saveData();
+        renderSettings();
+      }
+    }
+
+    // ========== MODALS ==========
+    function openNewItemModal() {
+      const modalContent = document.getElementById('modalContent');
+
+      modalContent.innerHTML = `
+        <form id="newItemForm" style="padding: 0;">
+          <div class="form-tabs">
+            <div class="form-tab active" data-tab="task">📋 Tarea</div>
+            <div class="form-tab" data-tab="appointment">📅 Cita</div>
+            <div class="form-tab" data-tab="project">🗂 Proyecto</div>
+          </div>
+
+          <div id="taskForm">
+            <div class="form-group">
+              <input type="text" class="form-input" id="taskName" placeholder="¿Qué hay que hacer?" required>
+            </div>
+            <div class="form-group">
+              <textarea class="form-textarea" id="taskNotes" placeholder="Añadir nota..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fecha</label>
+              <input type="date" class="form-input" id="taskDate" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hora</label>
+              <input type="time" class="form-input" id="taskTime" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Duración</label>
+              <div class="chip-grid" id="durationChips">
+                ${[5, 10, 15, 25, 30, 45, 55, 60, 90, 120].map(m => `<div class="chip" data-value="${m}" onclick="selectDuration(this, ${m})">${m}m</div>`).join('')}
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Categoría</label>
+              <div class="chip-grid" id="categoryChips">
+                ${categories.map(cat => `<div class="chip" data-value="${cat.id}" onclick="selectCategory(this, '${cat.id}')" title="${cat.name}">${cat.icon}</div>`).join('')}
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Prioridad</label>
+              <div class="chip-grid">
+                <div class="chip" data-value="alta" onclick="selectPriority(this, 'alta')">🔴 Alta</div>
+                <div class="chip" data-value="media" onclick="selectPriority(this, 'media')">🟡 Media</div>
+                <div class="chip" data-value="baja" onclick="selectPriority(this, 'baja')">🟢 Baja</div>
+              </div>
+            </div>
+            <button type="button" class="btn-primary" onclick="saveNewTask()">Crear tarea</button>
+          </div>
+
+          <div id="appointmentForm" class="hidden">
+            <div class="form-group">
+              <input type="text" class="form-input" id="aptTitle" placeholder="Título" required>
+            </div>
+            <div class="form-group">
+              <textarea class="form-textarea" id="aptDescription" placeholder="Descripción"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fecha</label>
+              <input type="date" class="form-input" id="aptDate" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hora inicio</label>
+              <input type="time" class="form-input" id="aptStartTime" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hora fin</label>
+              <input type="time" class="form-input" id="aptEndTime" required>
+            </div>
+            <div class="form-group">
+              <input type="text" class="form-input" id="aptLocation" placeholder="Ubicación o enlace">
+            </div>
+            <div class="form-group">
+              <input type="email" class="form-input" id="aptAttendees" placeholder="Correos (separados por coma)">
+            </div>
+            <button type="button" class="btn-primary" onclick="saveNewAppointment()">Crear cita</button>
+          </div>
+
+          <div id="projectForm" class="hidden">
+            <div class="form-group">
+              <input type="text" class="form-input" id="projName" placeholder="Nombre del proyecto" required>
+            </div>
+            <div class="form-group">
+              <textarea class="form-textarea" id="projDescription" placeholder="Descripción"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fecha inicio</label>
+              <input type="date" class="form-input" id="projStartDate" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fecha fin</label>
+              <input type="date" class="form-input" id="projEndDate" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Progreso (%)</label>
+              <input type="range" min="0" max="100" value="0" class="form-input" id="projProgress" style="padding: 6px;">
+            </div>
+            <button type="button" class="btn-primary" onclick="saveNewProject()">Crear proyecto</button>
+          </div>
+        </form>
+      `;
+
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('taskDate').value = today;
+      document.getElementById('taskTime').value = '09:00';
+      document.getElementById('aptDate').value = today;
+      document.getElementById('aptStartTime').value = '10:00';
+      document.getElementById('aptEndTime').value = '11:00';
+      document.getElementById('projStartDate').value = today;
+      document.getElementById('projEndDate').value = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+      document.querySelectorAll('.form-tab').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+          const tabName = e.target.getAttribute('data-tab');
+          document.querySelectorAll('.form-tab').forEach(t => t.classList.remove('active'));
+          e.target.classList.add('active');
+
+          document.getElementById('taskForm').classList.add('hidden');
+          document.getElementById('appointmentForm').classList.add('hidden');
+          document.getElementById('projectForm').classList.add('hidden');
+
+          if (tabName === 'task') document.getElementById('taskForm').classList.remove('hidden');
+          if (tabName === 'appointment') document.getElementById('appointmentForm').classList.remove('hidden');
+          if (tabName === 'project') document.getElementById('projectForm').classList.remove('hidden');
+        });
+      });
+
+      document.getElementById('modalOverlay').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+    }
+
+    let selectedDuration = 25;
+    let selectedCategory = 'focus';
+    let selectedPriority = 'media';
+
+    function selectDuration(el, duration) {
+      document.querySelectorAll('#durationChips .chip').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedDuration = duration;
+    }
+
+    function selectCategory(el, id) {
+      document.querySelectorAll('#categoryChips .chip').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedCategory = id;
+    }
+
+    function selectPriority(el, priority) {
+      el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedPriority = priority;
+    }
+
+    function saveNewTask() {
+      const name = document.getElementById('taskName').value;
+      const date = document.getElementById('taskDate').value;
+      const time = document.getElementById('taskTime').value;
+
+      if (!name || !date || !time) {
+        alert('Rellena los campos obligatorios');
+        return;
+      }
+
+      tasks.push({
+        id: Date.now().toString(),
+        name,
+        category: selectedCategory,
+        date,
+        time,
+        duration: selectedDuration,
+        priority: selectedPriority,
+        completed: false,
+      });
+
+      saveData();
+      closeModal();
+      playSound('add');
+      renderToday();
+    }
+
+    function saveNewAppointment() {
+      const title = document.getElementById('aptTitle').value;
+      const date = document.getElementById('aptDate').value;
+      const startTime = document.getElementById('aptStartTime').value;
+      const endTime = document.getElementById('aptEndTime').value;
+
+      if (!title || !date || !startTime || !endTime) {
+        alert('Rellena los campos obligatorios');
+        return;
+      }
+
+      const attendeesStr = document.getElementById('aptAttendees').value;
+      const attendees = attendeesStr ? attendeesStr.split(',').map(a => a.trim()) : [];
+
+      appointments.push({
+        id: Date.now().toString(),
+        title,
+        description: document.getElementById('aptDescription').value,
+        date,
+        startTime,
+        endTime,
+        location: document.getElementById('aptLocation').value,
+        attendees,
+        color: '#06b6d4',
+      });
+
+      saveData();
+      closeModal();
+      playSound('add');
+      renderAppointments();
+    }
+
+    function saveNewProject() {
+      const name = document.getElementById('projName').value;
+      const startDate = document.getElementById('projStartDate').value;
+      const endDate = document.getElementById('projEndDate').value;
+
+      if (!name || !startDate || !endDate) {
+        alert('Rellena los campos obligatorios');
+        return;
+      }
+
+      projects.push({
+        id: Date.now().toString(),
+        name,
+        description: document.getElementById('projDescription').value,
+        startDate,
+        endDate,
+        progress: parseInt(document.getElementById('projProgress').value),
+        team: [],
+        color: '#7c3aed',
+        priority: 'media',
+        status: 'todo',
+      });
+
+      saveData();
+      closeModal();
+      playSound('add');
+      renderProjects();
+    }
+
+    function openEditTaskModal(task) {
+      selectedDuration = task.duration;
+      selectedCategory = task.category;
+      selectedPriority = task.priority;
+      openNewItemModal();
+      document.getElementById('taskName').value = task.name;
+      document.getElementById('taskDate').value = task.date;
+      document.getElementById('taskTime').value = task.time;
+    }
+
+    // ========== AI ASSISTANT ==========
+    const aiResponses = [
+      'Tienes 5 tareas hoy. ¿Empezamos con la más importante?',
+      'Veo que completaste 3 tareas ayer. ¡Gran trabajo! 🎉',
+      'Tienes una cita en 2 horas. ¿Necesitas preparar algo?',
+      'Tu semana parece productiva. ¡Sigue así!',
+      'Sugiero que hagas un descanso después de 2 horas de trabajo.',
+      'Completaste el 80% de tus tareas esta semana.',
+      'Tus proyectos están en buen camino. ¡Sigue adelante!',
+      'Es momento de revisar tus objetivos semanales.',
+    ];
+
+    let aiIndex = 0;
+
+    function askAI(action) {
+      aiIndex = (aiIndex + 1) % aiResponses.length;
+      document.getElementById('aiResponse').textContent = aiResponses[aiIndex];
+    }
+
+    // ========== UTILITIES ==========
+    function isToday(dateStr) {
+      const today = new Date().toISOString().split('T')[0];
+      return dateStr === today;
+    }
+
+    function timeToMinutes(timeStr) {
+      const [h, m] = timeStr.split(':');
+      return parseInt(h) * 60 + parseInt(m);
+    }
+
+    function daysUntil(dateStr) {
+      const target = new Date(dateStr);
+      const now = new Date();
+      const diff = target - now;
+      return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    }
+
+    // ========== NOTIFICATIONS ==========
+    function initializeNotifications() {
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+    }
+
+    function sendNotification(title, body) {
+      if (settings.notificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, { body, icon: '🚀' });
+      }
+    }
+
+    // ========== SOUNDS ==========
+    function playSound(type) {
+      if (!settings.soundEnabled) return;
+
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'complete') {
+          osc.frequency.setValueAtTime(523, ctx.currentTime);
+          osc.frequency.setValueAtTime(659, ctx.currentTime + 0.1);
+          osc.frequency.setValueAtTime(784, ctx.currentTime + 0.2);
+          gain.gain.setValueAtTime(0.3, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+          osc.start(ctx.currentTime);
+          osc.stop(ctx.currentTime + 0.5);
+        } else if (type === 'timer_end') {
+          [0, 0.3, 0.6].forEach(t => {
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.connect(g);
+            g.connect(ctx.destination);
+            o.frequency.value = 880;
+            g.gain.setValueAtTime(0.4, ctx.currentTime + t);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.2);
+            o.start(ctx.currentTime + t);
+            o.stop(ctx.currentTime + t + 0.2);
+          });
+        } else if (type === 'notification') {
+          osc.frequency.value = 440;
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+          osc.start(ctx.currentTime);
+          osc.stop(ctx.currentTime + 0.3);
+        } else if (type === 'add') {
+          osc.frequency.setValueAtTime(440, ctx.currentTime);
+          osc.frequency.setValueAtTime(554, ctx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+          osc.start(ctx.currentTime);
+          osc.stop(ctx.currentTime + 0.3);
+        }
+      } catch (e) {
+        console.log('Audio not available');
+      }
+    }
+
+    // ========== EXPORT / IMPORT ==========
+    function exportData() {
+      const data = { tasks, appointments, projects, categories, settings };
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `flowai_backup_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+    }
+
+    function deleteAllData() {
+      if (confirm('¿Seguro que quieres borrar TODO? Esta acción no se puede deshacer.')) {
+        if (confirm('Confirma de nuevo: Esto eliminará todas tus tareas, citas y proyectos.')) {
+          tasks = [];
+          appointments = [];
+          projects = [];
+          localStorage.clear();
+          location.reload();
+        }
+      }
+    }
+
+    function showMoreMenu() {
+      navigateTo('reminders');
+    }
+
+    window.addEventListener('load', init);
   </script>
 </body>
 </html>
