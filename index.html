@@ -2037,7 +2037,8 @@
     let weekOffset = 0;
 
     // ── Cloud Sync state ──────────────────────────────────────────────────────
-    let syncBlobId   = localStorage.getItem('flowai_sync_blob') || null;
+    const DEFAULT_PANTRY_ID = '224a8c28-52af-47e5-a61f-1763fb062dcc';
+    let syncBlobId   = localStorage.getItem('flowai_sync_blob') || DEFAULT_PANTRY_ID;
     let syncEnabled  = !!syncBlobId;
     let syncStatus   = 'idle'; // idle | syncing | ok | error
     let syncInterval = null;
@@ -2070,6 +2071,10 @@
     let editingAppointmentId = null;
 
     function init() {
+      // Ensure default Pantry ID is persisted in localStorage
+      if (!localStorage.getItem('flowai_sync_blob') && DEFAULT_PANTRY_ID) {
+        localStorage.setItem('flowai_sync_blob', DEFAULT_PANTRY_ID);
+      }
       loadData();
       initializeParticles();
       setupEventListeners();
