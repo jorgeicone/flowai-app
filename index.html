@@ -59,7 +59,6 @@
       overflow: hidden;
     }
 
-    /* PARTICLE BACKGROUND */
     #particles {
       position: fixed;
       top: 0;
@@ -71,7 +70,6 @@
       z-index: 0;
     }
 
-    /* LAYOUT CONTAINER */
     .app-container {
       position: relative;
       z-index: 1;
@@ -81,7 +79,6 @@
       gap: 0;
     }
 
-    /* DESKTOP SIDEBAR */
     .sidebar {
       background: var(--bg-1);
       border-right: 1px solid var(--border);
@@ -149,7 +146,6 @@
       text-align: center;
     }
 
-    /* MAIN CONTENT */
     .main-content {
       background: var(--bg);
       overflow-y: auto;
@@ -189,7 +185,6 @@
       padding: 32px;
     }
 
-    /* RIGHT PANEL - TIMER + AI */
     .right-panel {
       background: var(--bg-1);
       border-left: 1px solid var(--border);
@@ -218,7 +213,6 @@
       margin-bottom: 16px;
     }
 
-    /* TIMER SECTION */
     .timer-display {
       display: flex;
       flex-direction: column;
@@ -315,7 +309,6 @@
       margin-top: 16px;
     }
 
-    /* AI SECTION */
     .ai-chat {
       display: flex;
       flex-direction: column;
@@ -383,7 +376,6 @@
       border-color: var(--border-strong);
     }
 
-    /* HOY PAGE */
     .today-header {
       display: flex;
       justify-content: space-between;
@@ -651,12 +643,108 @@
       border-color: var(--border-strong);
     }
 
-    /* SEMANA PAGE */
-    .week-grid {
+    .week-calendar {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--bg-3);
+    }
+
+    .week-header {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
-      margin-bottom: 32px;
+      grid-template-columns: 60px repeat(7, 1fr);
+      gap: 0;
+      background: var(--bg-4);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .week-header-cell {
+      padding: 12px 8px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+      border-right: 1px solid var(--border);
+    }
+
+    .week-header-cell:last-child {
+      border-right: none;
+    }
+
+    .week-header-cell.today {
+      background: var(--accent-glow);
+      color: var(--accent-light);
+    }
+
+    .week-time-row {
+      display: grid;
+      grid-template-columns: 60px repeat(7, 1fr);
+      gap: 0;
+      min-height: 50px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+
+    .week-time-label {
+      padding: 8px;
+      font-size: 11px;
+      color: var(--text-3);
+      text-align: center;
+      border-right: 1px solid var(--border);
+      background: var(--bg-2);
+    }
+
+    .week-cell {
+      position: relative;
+      border-right: 1px solid var(--border);
+      padding: 2px;
+      cursor: pointer;
+    }
+
+    .week-cell:last-child {
+      border-right: none;
+    }
+
+    .week-cell.today {
+      background: rgba(124, 58, 237, 0.05);
+    }
+
+    .week-cell.current-hour::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent);
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+    }
+
+    .week-task-block {
+      position: absolute;
+      left: 2px;
+      right: 2px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      border-radius: 4px;
+      padding: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      color: white;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+      transition: all 300ms;
+      box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+    }
+
+    .week-task-block:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
     }
 
     .day-card {
@@ -703,14 +791,6 @@
       margin-top: 8px;
     }
 
-    .day-tasks {
-      font-size: 11px;
-      color: var(--text-2);
-      margin-top: 8px;
-      line-height: 1.4;
-    }
-
-    /* CITAS PAGE */
     .appointments-header {
       display: flex;
       justify-content: space-between;
@@ -814,7 +894,11 @@
       font-size: 12px;
     }
 
-    /* PROYECTOS PAGE */
+    .appointment-actions {
+      display: flex;
+      gap: 8px;
+    }
+
     .projects-tabs {
       display: flex;
       gap: 12px;
@@ -921,69 +1005,23 @@
       border-top: 1px solid var(--border);
     }
 
-    .gantt-container {
-      overflow-x: auto;
-    }
-
-    .gantt-chart {
-      min-width: 100%;
-    }
-
-    .gantt-row {
-      display: grid;
-      grid-template-columns: 200px 1fr;
-      gap: 12px;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border);
-      align-items: center;
-    }
-
-    .gantt-label {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .gantt-timeline {
+    .project-actions {
       display: flex;
-      gap: 2px;
-      height: 32px;
-      position: relative;
+      gap: 8px;
+      margin-top: 8px;
     }
 
-    .gantt-day {
-      flex: 1;
+    .project-status-selector {
+      width: 100%;
+      padding: 8px;
       background: var(--bg-2);
-      border-radius: 2px;
       border: 1px solid var(--border);
-      min-height: 100%;
+      border-radius: var(--radius-xs);
+      color: var(--text);
+      font-size: 12px;
+      cursor: pointer;
     }
 
-    .gantt-day.today {
-      background: var(--accent-glow);
-      border-color: var(--accent);
-    }
-
-    .gantt-bar {
-      position: absolute;
-      height: 32px;
-      background: linear-gradient(90deg, var(--cyan), var(--accent));
-      border-radius: 4px;
-      top: 0;
-      display: flex;
-      align-items: center;
-      padding: 0 6px;
-      color: var(--bg);
-      font-size: 11px;
-      font-weight: 600;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
-    }
-
-    /* RECORDATORIOS PAGE */
     .reminders-group {
       margin-bottom: 32px;
     }
@@ -1057,7 +1095,6 @@
       border-color: var(--border-strong);
     }
 
-    /* AJUSTES PAGE */
     .settings-section {
       margin-bottom: 32px;
     }
@@ -1217,7 +1254,6 @@
       color: white;
     }
 
-    /* MOBILE LAYOUT */
     @media (max-width: 900px) {
       .app-container {
         grid-template-columns: 1fr;
@@ -1284,7 +1320,6 @@
         padding-bottom: var(--nav-h);
       }
 
-      /* MODAL - BOTTOM SHEET ON MOBILE */
       .modal-overlay {
         position: fixed;
         top: 0;
@@ -1365,7 +1400,6 @@
       }
     }
 
-    /* DESKTOP MODAL */
     @media (min-width: 901px) {
       .modal-overlay {
         position: fixed;
@@ -1436,7 +1470,6 @@
       }
     }
 
-    /* FORM ELEMENTS */
     .form-group {
       margin-bottom: 20px;
     }
@@ -1557,7 +1590,6 @@
       transform: translateY(0);
     }
 
-    /* FAB - FLOATING ACTION BUTTON */
     .fab {
       position: fixed;
       bottom: 24px;
@@ -1594,7 +1626,6 @@
       }
     }
 
-    /* UTILITIES */
     .text-center {
       text-align: center;
     }
@@ -1607,7 +1638,6 @@
       display: none !important;
     }
 
-    /* SCROLLBAR */
     ::-webkit-scrollbar {
       width: 8px;
       height: 8px;
@@ -1625,13 +1655,31 @@
     ::-webkit-scrollbar-thumb:hover {
       background: var(--bg-4);
     }
+
+    .file-attachment {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--bg-2);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-2);
+      margin-top: 8px;
+    }
+
+    .file-attachment-remove {
+      cursor: pointer;
+      color: var(--red);
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
   <canvas id="particles"></canvas>
 
   <div class="app-container">
-    <!-- DESKTOP SIDEBAR -->
     <aside class="sidebar">
       <div class="sidebar-header">
         <div class="sidebar-logo">🚀</div>
@@ -1665,10 +1713,8 @@
       </nav>
     </aside>
 
-    <!-- MAIN CONTENT -->
     <main class="main-content">
       <div class="main-scroll">
-        <!-- HOY PAGE -->
         <div class="page active" data-page="today">
           <div class="page-padding">
             <div class="today-header">
@@ -1701,15 +1747,13 @@
           </div>
         </div>
 
-        <!-- SEMANA PAGE -->
         <div class="page" data-page="week">
           <div class="page-padding">
             <h2 class="today-greeting" style="margin-bottom: 24px;">Esta semana</h2>
-            <div class="week-grid" id="weekGrid"></div>
+            <div id="weekCalendar"></div>
           </div>
         </div>
 
-        <!-- CITAS PAGE -->
         <div class="page" data-page="appointments">
           <div class="page-padding">
             <div class="appointments-header">
@@ -1719,7 +1763,6 @@
           </div>
         </div>
 
-        <!-- PROYECTOS PAGE -->
         <div class="page" data-page="projects">
           <div class="page-padding">
             <h2 class="today-greeting" style="margin-bottom: 24px;">Proyectos</h2>
@@ -1732,7 +1775,6 @@
           </div>
         </div>
 
-        <!-- RECORDATORIOS PAGE -->
         <div class="page" data-page="reminders">
           <div class="page-padding">
             <h2 class="today-greeting" style="margin-bottom: 24px;">Recordatorios</h2>
@@ -1740,7 +1782,6 @@
           </div>
         </div>
 
-        <!-- AJUSTES PAGE -->
         <div class="page" data-page="settings">
           <div class="page-padding">
             <h2 class="today-greeting" style="margin-bottom: 24px;">Ajustes</h2>
@@ -1804,6 +1845,11 @@
             </div>
 
             <div class="settings-section">
+              <div class="settings-section-title">Documentos guardados</div>
+              <div id="savedDocuments"></div>
+            </div>
+
+            <div class="settings-section">
               <div class="settings-section-title">Datos</div>
               <button class="btn-primary" onclick="exportData()">📥 Descargar copia</button>
               <button class="btn-primary" onclick="deleteAllData()" style="background: linear-gradient(135deg, var(--red), #dc2626);">🗑️ Borrar todo</button>
@@ -1813,9 +1859,7 @@
       </div>
     </main>
 
-    <!-- RIGHT PANEL - DESKTOP ONLY -->
     <aside class="right-panel">
-      <!-- TIMER SECTION -->
       <div class="panel-section">
         <div class="panel-title">Focus Timer</div>
         <div class="timer-display">
@@ -1847,7 +1891,6 @@
         </div>
       </div>
 
-      <!-- AI SECTION -->
       <div class="panel-section">
         <div class="panel-title">AI Assistant</div>
         <div class="ai-avatar">🧠</div>
@@ -1855,15 +1898,14 @@
           ¡Hola Jorge! Parece que tienes un día productivo. ¿Cómo puedo ayudarte?
         </div>
         <div class="ai-actions">
-          <button class="ai-action-btn" onclick="askAI('analyze')">📊 Analizar mi día</button>
-          <button class="ai-action-btn" onclick="askAI('suggest')">💡 Sugerencia</button>
-          <button class="ai-action-btn" onclick="askAI('organize')">🔄 Reorganizar</button>
+          <button class="ai-action-btn" onclick="sendAIMessage('📊 Analiza mi día')">📊 Analiza mi día</button>
+          <button class="ai-action-btn" onclick="sendAIMessage('⚡ ¿Qué es urgente?')">⚡ ¿Qué es urgente?</button>
+          <button class="ai-action-btn" onclick="sendAIMessage('📅 Próxima cita')">📅 Próxima cita</button>
         </div>
       </div>
     </aside>
   </div>
 
-  <!-- MOBILE BOTTOM NAV -->
   <nav class="mobile-nav">
     <div class="mobile-nav-item active" data-page="today">
       <div class="mobile-nav-icon">📅</div>
@@ -1887,10 +1929,8 @@
     </div>
   </nav>
 
-  <!-- FAB -->
   <button class="fab" id="fabBtn" title="Nueva tarea">➕</button>
 
-  <!-- MODAL -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal" id="modal">
       <div class="modal-handle"></div>
@@ -1903,7 +1943,6 @@
   </div>
 
   <script>
-    // ========== DATA STRUCTURES ==========
     const DEFAULT_CATEGORIES = [
       { id: 'focus', name: 'Enfoque', icon: '🎯', color: '#7c3aed' },
       { id: 'health', name: 'Salud', icon: '💪', color: '#10b981' },
@@ -1917,6 +1956,7 @@
     let appointments = [];
     let projects = [];
     let categories = DEFAULT_CATEGORIES;
+    let attachments = [];
     let settings = {
       name: 'Jorge',
       email: '',
@@ -1931,12 +1971,19 @@
     let timerMode = 'focus';
     let timerSeconds = 25 * 60;
     let todayFocusSeconds = 0;
+    let audioContextInitialized = false;
 
-    // ========== INITIALIZATION ==========
+    let selectedDuration = 25;
+    let selectedCategory = 'focus';
+    let selectedPriority = 'media';
+    let editingTaskId = null;
+    let editingAppointmentId = null;
+
     function init() {
       loadData();
       initializeParticles();
       setupEventListeners();
+      initAudioContext();
       renderAll();
       updateClock();
       setInterval(updateClock, 1000);
@@ -1951,12 +1998,14 @@
       const savedProjects = localStorage.getItem('flowai_projects');
       const savedCategories = localStorage.getItem('flowai_categories');
       const savedSettings = localStorage.getItem('flowai_settings');
+      const savedAttachments = localStorage.getItem('flowai_attachments');
 
       if (savedTasks) tasks = JSON.parse(savedTasks);
       if (savedAppointments) appointments = JSON.parse(savedAppointments);
       if (savedProjects) projects = JSON.parse(savedProjects);
       if (savedCategories) categories = JSON.parse(savedCategories);
       if (savedSettings) settings = { ...settings, ...JSON.parse(savedSettings) };
+      if (savedAttachments) attachments = JSON.parse(savedAttachments);
     }
 
     function saveData() {
@@ -1965,6 +2014,7 @@
       localStorage.setItem('flowai_projects', JSON.stringify(projects));
       localStorage.setItem('flowai_categories', JSON.stringify(categories));
       localStorage.setItem('flowai_settings', JSON.stringify(settings));
+      localStorage.setItem('flowai_attachments', JSON.stringify(attachments));
     }
 
     function loadSampleData() {
@@ -1975,11 +2025,11 @@
       tomorrow.setDate(tomorrow.getDate() + 1);
 
       tasks = [
-        { id: '1', name: 'Revisar emails', category: 'work', time: '09:00', date: today.toISOString().split('T')[0], duration: 15, priority: 'alta', completed: false },
-        { id: '2', name: 'Escribir documento', category: 'project', time: '10:00', date: today.toISOString().split('T')[0], duration: 60, priority: 'alta', completed: false },
-        { id: '3', name: 'Ejercicio', category: 'health', time: '07:00', date: today.toISOString().split('T')[0], duration: 30, priority: 'media', completed: false },
-        { id: '4', name: 'Llamada con cliente', category: 'work', time: '14:00', date: today.toISOString().split('T')[0], duration: 30, priority: 'alta', completed: false },
-        { id: '5', name: 'Preparar presentación', category: 'focus', time: '15:00', date: today.toISOString().split('T')[0], duration: 45, priority: 'alta', completed: false },
+        { id: '1', name: 'Revisar emails', category: 'work', time: '09:00', date: today.toISOString().split('T')[0], duration: 15, priority: 'alta', completed: false, attachmentIds: [] },
+        { id: '2', name: 'Escribir documento', category: 'project', time: '10:00', date: today.toISOString().split('T')[0], duration: 60, priority: 'alta', completed: false, attachmentIds: [] },
+        { id: '3', name: 'Ejercicio', category: 'health', time: '07:00', date: today.toISOString().split('T')[0], duration: 30, priority: 'media', completed: false, attachmentIds: [] },
+        { id: '4', name: 'Llamada con cliente', category: 'work', time: '14:00', date: today.toISOString().split('T')[0], duration: 30, priority: 'alta', completed: false, attachmentIds: [] },
+        { id: '5', name: 'Preparar presentación', category: 'focus', time: '15:00', date: today.toISOString().split('T')[0], duration: 45, priority: 'alta', completed: false, attachmentIds: [] },
       ];
 
       appointments = [
@@ -1995,7 +2045,6 @@
       saveData();
     }
 
-    // ========== PARTICLES BACKGROUND ==========
     function initializeParticles() {
       const canvas = document.getElementById('particles');
       const ctx = canvas.getContext('2d');
@@ -2058,7 +2107,17 @@
       });
     }
 
-    // ========== EVENT LISTENERS ==========
+    function initAudioContext() {
+      document.addEventListener('click', () => {
+        if (!audioContextInitialized) {
+          try {
+            new (window.AudioContext || window.webkitAudioContext)();
+            audioContextInitialized = true;
+          } catch (e) {}
+        }
+      }, { once: true });
+    }
+
     function setupEventListeners() {
       document.querySelectorAll('[data-page]').forEach(item => {
         item.addEventListener('click', (e) => {
@@ -2150,7 +2209,6 @@
       renderToday();
     }
 
-    // ========== CLOCK ==========
     function updateClock() {
       const now = new Date();
       const hours = String(now.getHours()).padStart(2, '0');
@@ -2170,7 +2228,6 @@
       }
     }
 
-    // ========== TIMER ==========
     function updateTimer() {
       if (!timerRunning) return;
 
@@ -2179,7 +2236,7 @@
         timerSeconds = 0;
         timerRunning = false;
         playSound('timer_end');
-        if (settings.vibrationEnabled) navigator.vibrate?.([ 100, 50, 100, 50, 100 ]);
+        if (settings.vibrationEnabled) navigator.vibrate?.([100, 50, 100, 50, 100]);
         sendNotification('Timer completado', `Tu sesión de ${timerMode} ha terminado`);
 
         if (timerMode === 'focus') {
@@ -2233,7 +2290,6 @@
       updateTimer();
     }
 
-    // ========== TODAY PAGE ==========
     function renderToday() {
       const today = new Date().toISOString().split('T')[0];
       const todayTasks = tasks.filter(t => t.date === today).sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
@@ -2268,7 +2324,7 @@
             <div class="task-actions">
               <button class="action-btn" onclick="focusTask('${task.id}')">▶</button>
               <button class="action-btn" onclick="editTask('${task.id}')">✎</button>
-              <button class="action-btn" onclick="deleteTask('${task.id}')">⋯</button>
+              <button class="action-btn" onclick="deleteTask('${task.id}')">🗑</button>
             </div>
           </div>
         `;
@@ -2298,8 +2354,17 @@
     }
 
     function editTask(id) {
+      editingTaskId = id;
       const task = tasks.find(t => t.id === id);
-      if (task) openEditTaskModal(task);
+      if (task) {
+        selectedDuration = task.duration || 25;
+        selectedCategory = task.category;
+        selectedPriority = task.priority;
+        openNewItemModal();
+        document.getElementById('taskName').value = task.name;
+        document.getElementById('taskDate').value = task.date;
+        document.getElementById('taskTime').value = task.time;
+      }
     }
 
     function deleteTask(id) {
@@ -2309,34 +2374,72 @@
       playSound('notification');
     }
 
-    // ========== WEEK PAGE ==========
     function renderWeek() {
       const today = new Date();
-      const weekHTML = Array.from({ length: 7 }, (_, i) => {
-        const date = new Date(today);
-        date.setDate(date.getDate() - date.getDay() + i);
-        const dateStr = date.toISOString().split('T')[0];
-        const dayName = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][date.getDay()];
-        const dayNum = date.getDate();
+      const todayStr = today.toISOString().split('T')[0];
+      const hours = Array.from({length: 17}, (_, i) => i + 6);
 
-        const dayTasks = tasks.filter(t => t.date === dateStr);
-        const isToday = dateStr === today.toISOString().split('T')[0];
+      const dayOfWeek = today.getDay() === 0 ? 6 : today.getDay() - 1;
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - dayOfWeek);
 
-        return `
-          <div class="day-card ${isToday ? 'today' : ''}">
-            <div class="day-name">${dayName}</div>
-            <div class="day-date">${dayNum}</div>
-            <div class="day-count">${dayTasks.length} tareas</div>
-            <div class="day-tasks">
-              ${dayTasks.slice(0, 2).map(t => `<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">• ${t.name}</div>`).join('')}
-            </div>
-          </div>
-        `;
-      }).join('');
-      document.getElementById('weekGrid').innerHTML = weekHTML;
+      const days = Array.from({length: 7}, (_, i) => {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        return d;
+      });
+
+      const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+      const currentHour = today.getHours();
+      const currentMin = today.getMinutes();
+
+      let html = '<div class="week-calendar"><div class="week-header">';
+      html += '<div class="week-header-cell"></div>';
+
+      days.forEach((d, i) => {
+        const dateStr = d.toISOString().split('T')[0];
+        const isToday = dateStr === todayStr;
+        html += `<div class="week-header-cell ${isToday ? 'today' : ''}">${dayNames[i]}<br>${d.getDate()}</div>`;
+      });
+
+      html += '</div>';
+
+      hours.forEach(hour => {
+        html += '<div class="week-time-row">';
+        html += `<div class="week-time-label">${hour}:00</div>`;
+
+        days.forEach((d, dayIdx) => {
+          const dateStr = d.toISOString().split('T')[0];
+          const isToday = dateStr === todayStr;
+          const isCurrentHour = isToday && hour === currentHour;
+          const cellClass = `week-cell ${isToday ? 'today' : ''} ${isCurrentHour ? 'current-hour' : ''}`;
+          html += `<div class="${cellClass}" onclick="openWeekTaskModal('${dateStr}', ${hour})">`;
+
+          const hourtasks = tasks.filter(t => t.date === dateStr && parseInt(t.time.split(':')[0]) === hour);
+          hourtasks.forEach(task => {
+            const startMin = parseInt(task.time.split(':')[1]) || 0;
+            const duration = task.duration || 30;
+            const topPercent = (startMin / 60) * 100;
+            const heightPercent = (duration / 60) * 100;
+            html += `<div class="week-task-block" style="top: ${topPercent}%; height: ${heightPercent}%;" onclick="editTask('${task.id}'); event.stopPropagation();" title="${task.name}">${task.name}</div>`;
+          });
+
+          html += '</div>';
+        });
+
+        html += '</div>';
+      });
+
+      html += '</div>';
+      document.getElementById('weekCalendar').innerHTML = html;
     }
 
-    // ========== APPOINTMENTS PAGE ==========
+    function openWeekTaskModal(dateStr, hour) {
+      openNewItemModal();
+      document.getElementById('taskDate').value = dateStr;
+      document.getElementById('taskTime').value = `${String(hour).padStart(2, '0')}:00`;
+    }
+
     function renderAppointments() {
       const grouped = {};
       appointments.forEach(apt => {
@@ -2364,6 +2467,10 @@
                     ${apt.attendees && apt.attendees.length > 0 ? `<div class="appointment-attendees">${apt.attendees.slice(0, 2).map(a => `<div class="avatar-small" title="${a}">${a.charAt(0).toUpperCase()}</div>`).join('')}${apt.attendees.length > 2 ? `<div style="font-size: 12px; color: var(--text-3);">+${apt.attendees.length - 2}</div>` : ''}</div>` : ''}
                   </div>
                 </div>
+                <div class="appointment-actions">
+                  <button class="action-btn" onclick="editAppointment('${apt.id}')">✎</button>
+                  <button class="action-btn" onclick="deleteAppointment('${apt.id}')">🗑</button>
+                </div>
               </div>
             `).join('')}
           </div>
@@ -2373,7 +2480,28 @@
       document.getElementById('appointmentsContainer').innerHTML = html || '<p style="color: var(--text-3); text-align: center; padding: 32px;">Sin citas próximas</p>';
     }
 
-    // ========== PROJECTS PAGE ==========
+    function editAppointment(id) {
+      editingAppointmentId = id;
+      const apt = appointments.find(a => a.id === id);
+      if (apt) {
+        openNewItemModal();
+        document.querySelectorAll('.form-tab')[1].click();
+        document.getElementById('aptTitle').value = apt.title;
+        document.getElementById('aptDescription').value = apt.description || '';
+        document.getElementById('aptDate').value = apt.date;
+        document.getElementById('aptStartTime').value = apt.startTime;
+        document.getElementById('aptEndTime').value = apt.endTime;
+        document.getElementById('aptLocation').value = apt.location || '';
+        document.getElementById('aptAttendees').value = apt.attendees.join(', ');
+      }
+    }
+
+    function deleteAppointment(id) {
+      appointments = appointments.filter(a => a.id !== id);
+      saveData();
+      renderAppointments();
+    }
+
     function renderProjects() {
       const kanbanHTML = `
         <div class="kanban-board">
@@ -2394,8 +2522,8 @@
       document.getElementById('kanbanView').innerHTML = kanbanHTML;
 
       const ganttHTML = `
-        <div class="gantt-container">
-          <div class="gantt-chart">${projects.map(p => ganttRow(p)).join('')}</div>
+        <div style="overflow-x: auto;">
+          <div style="min-width: 100%;">${projects.map(p => ganttRow(p)).join('')}</div>
         </div>
       `;
       document.getElementById('ganttView').innerHTML = ganttHTML;
@@ -2409,34 +2537,70 @@
             <div class="progress-percent">${p.progress}%</div>
             <div class="progress-bar-sm"><div class="progress-fill-sm" style="width: ${p.progress}%; background: ${p.color}"></div></div>
           </div>
+          <select class="project-status-selector" onchange="moveProject('${p.id}', this.value)">
+            <option value="todo" ${p.status === 'todo' ? 'selected' : ''}>Por hacer</option>
+            <option value="in-progress" ${p.status === 'in-progress' ? 'selected' : ''}>En progreso</option>
+            <option value="completed" ${p.status === 'completed' ? 'selected' : ''}>Completado</option>
+          </select>
           <div class="project-meta">
             <span>${p.team.length} miembros</span>
             <span>${daysUntil(p.endDate)} días</span>
           </div>
+          <div class="project-actions">
+            <button class="action-btn" onclick="editProject('${p.id}')">✎</button>
+            <button class="action-btn" onclick="deleteProject('${p.id}')">🗑</button>
+          </div>
         </div>
       `;
+    }
+
+    function editProject(id) {
+      const project = projects.find(p => p.id === id);
+      if (project) {
+        openNewItemModal();
+        document.querySelectorAll('.form-tab')[2].click();
+        document.getElementById('projName').value = project.name;
+        document.getElementById('projDescription').value = project.description || '';
+        document.getElementById('projStartDate').value = project.startDate;
+        document.getElementById('projEndDate').value = project.endDate;
+        document.getElementById('projProgress').value = project.progress;
+      }
+    }
+
+    function deleteProject(id) {
+      projects = projects.filter(p => p.id !== id);
+      saveData();
+      renderProjects();
+    }
+
+    function moveProject(id, status) {
+      const project = projects.find(p => p.id === id);
+      if (project) {
+        project.status = status;
+        saveData();
+        renderProjects();
+      }
     }
 
     function ganttRow(p) {
       const startDate = new Date(p.startDate);
       const today = new Date();
       return `
-        <div class="gantt-row">
-          <div class="gantt-label">${p.name}</div>
-          <div class="gantt-timeline">
+        <div style="display: grid; grid-template-columns: 200px 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: center;">
+          <div style="font-size: 14px; font-weight: 500; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.name}</div>
+          <div style="display: flex; gap: 2px; height: 32px; position: relative;">
             ${Array.from({ length: 30 }, (_, i) => {
               const date = new Date(startDate);
               date.setDate(date.getDate() + i);
               const dateStr = date.toISOString().split('T')[0];
               const isToday = dateStr === today.toISOString().split('T')[0];
-              return `<div class="gantt-day ${isToday ? 'today' : ''}"></div>`;
+              return `<div style="flex: 1; background: ${isToday ? 'var(--accent-glow)' : 'var(--bg-2)'}; border-radius: 2px; border: 1px solid var(--border); min-height: 100%;"></div>`;
             }).join('')}
           </div>
         </div>
       `;
     }
 
-    // ========== REMINDERS PAGE ==========
     function renderReminders() {
       const allItems = [...tasks.map(t => ({ ...t, type: 'task' })), ...appointments.map(a => ({ ...a, type: 'appointment' }))];
       const now = new Date();
@@ -2481,7 +2645,6 @@
       if (task) focusTask(id);
     }
 
-    // ========== SETTINGS PAGE ==========
     function renderSettings() {
       document.getElementById('settingName').value = settings.name;
       document.getElementById('settingEmail').value = settings.email || '';
@@ -2500,6 +2663,14 @@
         </div>
       `).join('');
       document.getElementById('categoriesList').innerHTML = catHTML;
+
+      const docHTML = attachments.map(att => `
+        <div class="file-attachment">
+          📄 ${att.name}
+          <span class="file-attachment-remove" onclick="deleteAttachment('${att.id}')">✕</span>
+        </div>
+      `).join('');
+      document.getElementById('savedDocuments').innerHTML = docHTML || '<p style="color: var(--text-3); font-size: 12px;">Sin documentos guardados</p>';
     }
 
     function deleteCategory(id) {
@@ -2510,9 +2681,15 @@
       }
     }
 
-    // ========== MODALS ==========
+    function deleteAttachment(id) {
+      attachments = attachments.filter(a => a.id !== id);
+      saveData();
+      renderSettings();
+    }
+
     function openNewItemModal() {
       const modalContent = document.getElementById('modalContent');
+      const today = new Date().toISOString().split('T')[0];
 
       modalContent.innerHTML = `
         <form id="newItemForm" style="padding: 0;">
@@ -2531,16 +2708,16 @@
             </div>
             <div class="form-group">
               <label class="form-label">Fecha</label>
-              <input type="date" class="form-input" id="taskDate" required>
+              <input type="date" class="form-input" id="taskDate" value="${today}" required>
             </div>
             <div class="form-group">
-              <label class="form-label">Hora</label>
-              <input type="time" class="form-input" id="taskTime" required>
+              <label class="form-label">Hora (opcional)</label>
+              <input type="time" class="form-input" id="taskTime" value="09:00">
             </div>
             <div class="form-group">
               <label class="form-label">Duración</label>
               <div class="chip-grid" id="durationChips">
-                ${[5, 10, 15, 25, 30, 45, 55, 60, 90, 120].map(m => `<div class="chip" data-value="${m}" onclick="selectDuration(this, ${m})">${m}m</div>`).join('')}
+                ${[5, 10, 15, 25, 30, 45, 55, 60, 90, 120].map(m => `<div class="chip ${m === 25 ? 'selected' : ''}" data-value="${m}" onclick="selectDuration(this, ${m})">${m}m</div>`).join('')}
               </div>
             </div>
             <div class="form-group">
@@ -2553,9 +2730,12 @@
               <label class="form-label">Prioridad</label>
               <div class="chip-grid">
                 <div class="chip" data-value="alta" onclick="selectPriority(this, 'alta')">🔴 Alta</div>
-                <div class="chip" data-value="media" onclick="selectPriority(this, 'media')">🟡 Media</div>
+                <div class="chip ${selectedPriority === 'media' ? 'selected' : ''}" data-value="media" onclick="selectPriority(this, 'media')">🟡 Media</div>
                 <div class="chip" data-value="baja" onclick="selectPriority(this, 'baja')">🟢 Baja</div>
               </div>
+            </div>
+            <div class="form-group">
+              <input type="file" class="form-input" id="taskFile" accept="image/*,.pdf,.txt" style="padding: 8px;">
             </div>
             <button type="button" class="btn-primary" onclick="saveNewTask()">Crear tarea</button>
           </div>
@@ -2569,15 +2749,15 @@
             </div>
             <div class="form-group">
               <label class="form-label">Fecha</label>
-              <input type="date" class="form-input" id="aptDate" required>
+              <input type="date" class="form-input" id="aptDate" value="${today}" required>
             </div>
             <div class="form-group">
               <label class="form-label">Hora inicio</label>
-              <input type="time" class="form-input" id="aptStartTime" required>
+              <input type="time" class="form-input" id="aptStartTime" value="10:00" required>
             </div>
             <div class="form-group">
               <label class="form-label">Hora fin</label>
-              <input type="time" class="form-input" id="aptEndTime" required>
+              <input type="time" class="form-input" id="aptEndTime" value="11:00" required>
             </div>
             <div class="form-group">
               <input type="text" class="form-input" id="aptLocation" placeholder="Ubicación o enlace">
@@ -2597,11 +2777,11 @@
             </div>
             <div class="form-group">
               <label class="form-label">Fecha inicio</label>
-              <input type="date" class="form-input" id="projStartDate" required>
+              <input type="date" class="form-input" id="projStartDate" value="${today}" required>
             </div>
             <div class="form-group">
               <label class="form-label">Fecha fin</label>
-              <input type="date" class="form-input" id="projEndDate" required>
+              <input type="date" class="form-input" id="projEndDate" value="${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}" required>
             </div>
             <div class="form-group">
               <label class="form-label">Progreso (%)</label>
@@ -2611,15 +2791,6 @@
           </div>
         </form>
       `;
-
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('taskDate').value = today;
-      document.getElementById('taskTime').value = '09:00';
-      document.getElementById('aptDate').value = today;
-      document.getElementById('aptStartTime').value = '10:00';
-      document.getElementById('aptEndTime').value = '11:00';
-      document.getElementById('projStartDate').value = today;
-      document.getElementById('projEndDate').value = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
       document.querySelectorAll('.form-tab').forEach(tab => {
         tab.addEventListener('click', (e) => {
@@ -2637,16 +2808,36 @@
         });
       });
 
+      // Set selected values after form is created
+      const catChips = document.querySelectorAll('#categoryChips .chip');
+      catChips.forEach(chip => {
+        if (chip.getAttribute('data-value') === selectedCategory) {
+          chip.classList.add('selected');
+        }
+      });
+
+      const durationChips = document.querySelectorAll('#durationChips .chip');
+      durationChips.forEach(chip => {
+        if (parseInt(chip.getAttribute('data-value')) === selectedDuration) {
+          chip.classList.add('selected');
+        }
+      });
+
+      const priorityChips = document.querySelectorAll('.form-tab-hidden .chip, .form-tab ~ .chip');
+      document.querySelectorAll('.form-group:has(.chip[data-value*="alta"]) .chip').forEach(chip => {
+        if (chip.getAttribute('data-value') === selectedPriority) {
+          chip.classList.add('selected');
+        }
+      });
+
       document.getElementById('modalOverlay').classList.add('active');
     }
 
     function closeModal() {
+      editingTaskId = null;
+      editingAppointmentId = null;
       document.getElementById('modalOverlay').classList.remove('active');
     }
-
-    let selectedDuration = 25;
-    let selectedCategory = 'focus';
-    let selectedPriority = 'media';
 
     function selectDuration(el, duration) {
       document.querySelectorAll('#durationChips .chip').forEach(c => c.classList.remove('selected'));
@@ -2669,15 +2860,15 @@
     function saveNewTask() {
       const name = document.getElementById('taskName').value;
       const date = document.getElementById('taskDate').value;
-      const time = document.getElementById('taskTime').value;
+      const time = document.getElementById('taskTime').value || '09:00';
 
-      if (!name || !date || !time) {
+      if (!name || !date) {
         alert('Rellena los campos obligatorios');
         return;
       }
 
-      tasks.push({
-        id: Date.now().toString(),
+      const task = {
+        id: editingTaskId || Date.now().toString(),
         name,
         category: selectedCategory,
         date,
@@ -2685,7 +2876,15 @@
         duration: selectedDuration,
         priority: selectedPriority,
         completed: false,
-      });
+        attachmentIds: [],
+      };
+
+      if (editingTaskId) {
+        const idx = tasks.findIndex(t => t.id === editingTaskId);
+        if (idx >= 0) tasks[idx] = task;
+      } else {
+        tasks.push(task);
+      }
 
       saveData();
       closeModal();
@@ -2707,8 +2906,8 @@
       const attendeesStr = document.getElementById('aptAttendees').value;
       const attendees = attendeesStr ? attendeesStr.split(',').map(a => a.trim()) : [];
 
-      appointments.push({
-        id: Date.now().toString(),
+      const apt = {
+        id: editingAppointmentId || Date.now().toString(),
         title,
         description: document.getElementById('aptDescription').value,
         date,
@@ -2717,7 +2916,14 @@
         location: document.getElementById('aptLocation').value,
         attendees,
         color: '#06b6d4',
-      });
+      };
+
+      if (editingAppointmentId) {
+        const idx = appointments.findIndex(a => a.id === editingAppointmentId);
+        if (idx >= 0) appointments[idx] = apt;
+      } else {
+        appointments.push(apt);
+      }
 
       saveData();
       closeModal();
@@ -2754,36 +2960,58 @@
       renderProjects();
     }
 
-    function openEditTaskModal(task) {
-      selectedDuration = task.duration;
-      selectedCategory = task.category;
-      selectedPriority = task.priority;
-      openNewItemModal();
-      document.getElementById('taskName').value = task.name;
-      document.getElementById('taskDate').value = task.date;
-      document.getElementById('taskTime').value = task.time;
+    function getAIResponse(userMessage) {
+      const today = new Date().toISOString().split('T')[0];
+      const todayTasks = tasks.filter(t => t.date === today);
+      const completedToday = todayTasks.filter(t => t.completed).length;
+      const pendingToday = todayTasks.filter(t => !t.completed).length;
+      const highPriority = todayTasks.filter(t => t.priority === 'alta' && !t.completed);
+      const nextApt = appointments.filter(a => a.date >= today).sort((a,b) => a.date.localeCompare(b.date))[0];
+      const activeProjects = projects.filter(p => p.status === 'in-progress');
+
+      const context = {
+        todayTasks: todayTasks.length,
+        completedToday,
+        pendingToday,
+        highPriority: highPriority.map(t => t.name),
+        nextAppointment: nextApt ? `${nextApt.title} el ${nextApt.date} a las ${nextApt.startTime}` : null,
+        activeProjects: activeProjects.map(p => `${p.name} (${p.progress}%)`),
+        totalTasks: tasks.length,
+      };
+
+      const msg = userMessage.toLowerCase();
+      if (msg.includes('hoy') || msg.includes('día') || msg.includes('dia')) {
+        return `Hoy tienes ${context.todayTasks} tareas programadas. Has completado ${context.completedToday} y te quedan ${context.pendingToday} pendientes.${context.highPriority.length > 0 ? ` Las más urgentes: ${context.highPriority.join(', ')}.` : ''} ¿En qué te ayudo?`;
+      }
+      if (msg.includes('cita') || msg.includes('reunión') || msg.includes('reunion')) {
+        return context.nextAppointment ? `Tu próxima cita es: ${context.nextAppointment}.` : `No tienes citas próximas agendadas. ¿Quieres crear una?`;
+      }
+      if (msg.includes('proyecto') || msg.includes('project')) {
+        return activeProjects.length > 0 ? `Tienes ${activeProjects.length} proyecto(s) activos: ${context.activeProjects.join(', ')}.` : `No hay proyectos activos. ¿Quieres crear uno?`;
+      }
+      if (msg.includes('analiza') || msg.includes('organiza') || msg.includes('suger') || msg.includes('urgente')) {
+        const hour = new Date().getHours();
+        const timeGreet = hour < 12 ? 'mañana' : hour < 17 ? 'tarde' : 'noche';
+        return `Buenas ${timeGreet}, Jorge. Con ${context.pendingToday} tarea(s) pendientes hoy${context.highPriority.length > 0 ? ` y ${context.highPriority.length} de alta prioridad` : ''}, te sugiero empezar por "${context.highPriority[0] || (todayTasks[0] && todayTasks[0].name) || 'tu tarea más importante'}". ${context.activeProjects.length > 0 ? `Tus proyectos activos necesitan atención: ${context.activeProjects[0]}.` : ''} ¿Por dónde empezamos?`;
+      }
+      if (msg.includes('pendiente') || msg.includes('queda') || msg.includes('falta')) {
+        return `Te quedan ${context.pendingToday} tarea(s) para hoy. ${context.highPriority.length > 0 ? `Alta prioridad: ${context.highPriority.join(', ')}.` : 'Ninguna es de alta prioridad — buen ritmo.'} Llevas ${context.completedToday} completadas. ¡Sigue así!`;
+      }
+
+      const responses = [
+        `Tienes ${context.pendingToday} tarea(s) pendientes hoy. ${context.nextAppointment ? `Próxima cita: ${context.nextAppointment}.` : ''} ¿En qué te ayudo?`,
+        `Con ${context.totalTasks} tareas en total y ${context.activeProjects.length} proyectos activos, tu productividad está tomando forma. ¿Quieres que analice algo específico?`,
+        `Llevas ${context.completedToday} de ${context.todayTasks} tareas completadas hoy. ${context.completedToday === context.todayTasks && context.todayTasks > 0 ? '¡Día completado! 🎉' : `Quedan ${context.pendingToday} por hacer.`}`,
+        `${context.highPriority.length > 0 ? `Recuerda: tienes ${context.highPriority.length} tarea(s) de alta prioridad pendientes: ${context.highPriority.join(', ')}.` : 'Todo bajo control — no hay tareas urgentes pendientes.'} ¿Cómo te puedo ayudar?`,
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
     }
 
-    // ========== AI ASSISTANT ==========
-    const aiResponses = [
-      'Tienes 5 tareas hoy. ¿Empezamos con la más importante?',
-      'Veo que completaste 3 tareas ayer. ¡Gran trabajo! 🎉',
-      'Tienes una cita en 2 horas. ¿Necesitas preparar algo?',
-      'Tu semana parece productiva. ¡Sigue así!',
-      'Sugiero que hagas un descanso después de 2 horas de trabajo.',
-      'Completaste el 80% de tus tareas esta semana.',
-      'Tus proyectos están en buen camino. ¡Sigue adelante!',
-      'Es momento de revisar tus objetivos semanales.',
-    ];
-
-    let aiIndex = 0;
-
-    function askAI(action) {
-      aiIndex = (aiIndex + 1) % aiResponses.length;
-      document.getElementById('aiResponse').textContent = aiResponses[aiIndex];
+    function sendAIMessage(userMessage) {
+      const response = getAIResponse(userMessage);
+      document.getElementById('aiResponse').textContent = response;
     }
 
-    // ========== UTILITIES ==========
     function isToday(dateStr) {
       const today = new Date().toISOString().split('T')[0];
       return dateStr === today;
@@ -2801,7 +3029,6 @@
       return Math.ceil(diff / (1000 * 60 * 60 * 24));
     }
 
-    // ========== NOTIFICATIONS ==========
     function initializeNotifications() {
       if ('Notification' in window && Notification.permission === 'default') {
         Notification.requestPermission();
@@ -2814,7 +3041,6 @@
       }
     }
 
-    // ========== SOUNDS ==========
     function playSound(type) {
       if (!settings.soundEnabled) return;
 
@@ -2864,9 +3090,8 @@
       }
     }
 
-    // ========== EXPORT / IMPORT ==========
     function exportData() {
-      const data = { tasks, appointments, projects, categories, settings };
+      const data = { tasks, appointments, projects, categories, settings, attachments };
       const json = JSON.stringify(data, null, 2);
       const blob = new Blob([json], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -2882,6 +3107,7 @@
           tasks = [];
           appointments = [];
           projects = [];
+          attachments = [];
           localStorage.clear();
           location.reload();
         }
