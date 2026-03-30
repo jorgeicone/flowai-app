@@ -1749,7 +1749,11 @@
 
         <div class="page" data-page="week">
           <div class="page-padding">
-            <h2 class="today-greeting" style="margin-bottom: 24px;">Esta semana</h2>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+              <button onclick="weekOffset--;renderWeek();" style="background:var(--bg-3);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:8px 18px;cursor:pointer;font-size:18px;line-height:1;">‹</button>
+              <h2 class="today-greeting" id="weekTitle" style="margin:0;">Esta semana</h2>
+              <button onclick="weekOffset++;renderWeek();" style="background:var(--bg-3);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:8px 18px;cursor:pointer;font-size:18px;line-height:1;">›</button>
+            </div>
             <div id="weekCalendar"></div>
           </div>
         </div>
@@ -1902,6 +1906,20 @@
           <button class="ai-action-btn" onclick="sendAIMessage('⚡ ¿Qué es urgente?')">⚡ ¿Qué es urgente?</button>
           <button class="ai-action-btn" onclick="sendAIMessage('📅 Próxima cita')">📅 Próxima cita</button>
         </div>
+        <div style="display:flex;gap:8px;margin-top:12px;align-items:flex-end;">
+          <textarea id="aiInput"
+            placeholder="Escríbeme algo…"
+            rows="2"
+            style="flex:1;background:var(--bg-3);border:1px solid var(--border-strong);border-radius:var(--radius-sm);color:var(--text);padding:10px 12px;font-family:var(--font);font-size:13px;resize:none;outline:none;line-height:1.5;transition:border-color .2s;"
+            onfocus="this.style.borderColor='var(--accent)'"
+            onblur="this.style.borderColor='var(--border-strong)'"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();const v=this.value.trim();if(v){sendAIMessage(v);this.value='';}}"
+          ></textarea>
+          <button
+            onclick="const el=document.getElementById('aiInput');const v=el.value.trim();if(v){sendAIMessage(v);el.value=''}"
+            style="background:var(--accent);border:none;border-radius:var(--radius-sm);color:white;width:40px;height:40px;font-size:18px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
+            title="Enviar">↑</button>
+        </div>
       </div>
     </aside>
   </div>
@@ -1953,6 +1971,7 @@
     ];
 
     let tasks = [];
+    let weekOffset = 0;
     let appointments = [];
     let projects = [];
     let categories = DEFAULT_CATEGORIES;
@@ -2221,7 +2240,7 @@
       const day = now.getDate();
       const monthName = months[now.getMonth()];
 
-      if (isToday(now.toISOString().split('T')[0])) {
+      if (isToday(localDate(now))) {
         document.getElementById('currentDate').textContent = 'Hoy';
       } else {
         document.getElementById('currentDate').textContent = `${dayName}, ${day} de ${monthName}`;
@@ -2290,8 +2309,13 @@
       updateTimer();
     }
 
+    function localDate(d) {
+      const dd = d || new Date();
+      return `${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}-${String(dd.getDate()).padStart(2,'0')}`;
+    }
+
     function renderToday() {
-      const today = new Date().toISOString().split('T')[0];
+      const today = localDate();
       const todayTasks = tasks.filter(t => t.date === today).sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
 
       const completed = todayTasks.filter(t => t.completed).length;
@@ -2376,12 +2400,27 @@
 
     function renderWeek() {
       const today = new Date();
-      const todayStr = today.toISOString().split('T')[0];
+      const todayStr = localDate(today);
       const hours = Array.from({length: 17}, (_, i) => i + 6);
 
       const dayOfWeek = today.getDay() === 0 ? 6 : today.getDay() - 1;
       const monday = new Date(today);
-      monday.setDate(today.getDate() - dayOfWeek);
+      monday.setDate(today.getDate() - dayOfWeek + weekOffset * 7);
+
+      // Update week title
+      const titleEl = document.getElementById('weekTitle');
+      if (titleEl) {
+        if (weekOffset === 0) {
+          titleEl.textContent = 'Esta semana';
+        } else if (weekOffset === -1) {
+          titleEl.textContent = 'Semana pasada';
+        } else if (weekOffset === 1) {
+          titleEl.textContent = 'Próxima semana';
+        } else {
+          const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+          titleEl.textContent = `${monday.getDate()} ${months[monday.getMonth()]}`;
+        }
+      }
 
       const days = Array.from({length: 7}, (_, i) => {
         const d = new Date(monday);
@@ -2397,7 +2436,7 @@
       html += '<div class="week-header-cell"></div>';
 
       days.forEach((d, i) => {
-        const dateStr = d.toISOString().split('T')[0];
+        const dateStr = localDate(d);
         const isToday = dateStr === todayStr;
         html += `<div class="week-header-cell ${isToday ? 'today' : ''}">${dayNames[i]}<br>${d.getDate()}</div>`;
       });
@@ -2409,7 +2448,7 @@
         html += `<div class="week-time-label">${hour}:00</div>`;
 
         days.forEach((d, dayIdx) => {
-          const dateStr = d.toISOString().split('T')[0];
+          const dateStr = localDate(d);
           const isToday = dateStr === todayStr;
           const isCurrentHour = isToday && hour === currentHour;
           const cellClass = `week-cell ${isToday ? 'today' : ''} ${isCurrentHour ? 'current-hour' : ''}`;
@@ -3008,13 +3047,14 @@
     }
 
     function sendAIMessage(userMessage) {
+      if (!userMessage || !userMessage.trim()) return;
       const response = getAIResponse(userMessage);
-      document.getElementById('aiResponse').textContent = response;
+      const box = document.getElementById('aiResponse');
+      box.innerHTML = `<div style="color:var(--text-2);font-size:12px;margin-bottom:6px;">Tú: ${userMessage.trim()}</div><div>${response}</div>`;
     }
 
     function isToday(dateStr) {
-      const today = new Date().toISOString().split('T')[0];
-      return dateStr === today;
+      return dateStr === localDate();
     }
 
     function timeToMinutes(timeStr) {
