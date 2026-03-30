@@ -518,6 +518,11 @@
       to   { opacity: 1; transform: translateX(-50%) translateY(0)     scale(1);   }
     }
 
+    @keyframes alarmPulse {
+      from { transform: scale(1);    opacity: 1;   }
+      to   { transform: scale(1.2);  opacity: 0.7; }
+    }
+
     .task-card:nth-child(1) { animation-delay: 0ms; }
     .task-card:nth-child(2) { animation-delay: 50ms; }
     .task-card:nth-child(3) { animation-delay: 100ms; }
@@ -1998,6 +2003,7 @@
     let timerSeconds = 25 * 60;
     let todayFocusSeconds = 0;
     let audioContextInitialized = false;
+    let sharedAudioCtx = null;
 
     let selectedDuration = 25;
     let selectedCategory = 'focus';
@@ -2014,7 +2020,8 @@
       updateClock();
       setInterval(updateClock, 1000);
       setInterval(updateTimer, 1000);
-      setInterval(checkAlarms, 15000); // check alarms every 15 seconds
+      setInterval(checkAlarms, 10000); // check alarms every 10 seconds
+      setTimeout(checkMissedAlarms, 2000); // on load, check last 10 min
       initializeNotifications();
       loadSampleData();
     }
@@ -2141,14 +2148,21 @@
     }
 
     function initAudioContext() {
-      document.addEventListener('click', () => {
-        if (!audioContextInitialized) {
-          try {
-            new (window.AudioContext || window.webkitAudioContext)();
-            audioContextInitialized = true;
-          } catch (e) {}
-        }
-      }, { once: true });
+      // Resume/create audio context on ANY user interaction (not once)
+      const unlock = () => {
+        try {
+          if (!sharedAudioCtx) {
+            sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          }
+          if (sharedAudioCtx.state === 'suspended') {
+            sharedAudioCtx.resume();
+          }
+          audioContextInitialized = true;
+        } catch (e) {}
+      };
+      document.addEventListener('click', unlock);
+      document.addEventListener('touchstart', unlock);
+      document.addEventListener('keydown', unlock);
     }
 
     function setupEventListeners() {
@@ -3115,37 +3129,69 @@
     }
 
     function triggerAlarm(item) {
-      // Sound + vibration
+      // Sound + vibration (repeat 3x with 1s gap)
       playSound('alarm');
-      if (settings.vibrationEnabled) navigator.vibrate?.([300, 100, 300, 100, 300]);
+      if (settings.vibrationEnabled) navigator.vibrate?.([400, 200, 400, 200, 400]);
+      setTimeout(() => playSound('alarm'), 1200);
+      setTimeout(() => playSound('alarm'), 2400);
 
-      // On-screen banner (works on ALL browsers including iOS Safari)
+      // Remove any existing banner for this item
+      document.getElementById('alarmBanner_' + item.id)?.remove();
+
+      // On-screen banner — stays until dismissed (no auto-remove)
       const banner = document.createElement('div');
-      banner.id = 'alarmBanner_' + item.id;
+      const bid = 'alarmBanner_' + item.id;
+      banner.id = bid;
       banner.style.cssText = [
-        'position:fixed','top:20px','left:50%','transform:translateX(-50%)',
-        'background:linear-gradient(135deg,#7c3aed,#06b6d4)',
-        'color:white','padding:16px 20px','border-radius:16px',
+        'position:fixed','top:16px','left:50%','transform:translateX(-50%)',
+        'background:linear-gradient(135deg,#7c3aed 0%,#06b6d4 100%)',
+        'color:white','padding:18px 22px','border-radius:20px',
         'font-size:15px','font-weight:600','z-index:9999',
-        'box-shadow:0 8px 40px rgba(124,58,237,0.5)',
-        'display:flex','align-items:center','gap:12px',
-        'max-width:90vw','animation:alarmSlide 0.4s cubic-bezier(0.16,1,0.3,1)',
-        'cursor:pointer'
+        'box-shadow:0 8px 48px rgba(124,58,237,0.7)',
+        'display:flex','align-items:center','gap:14px',
+        'max-width:92vw','min-width:260px',
+        'animation:alarmSlide 0.4s cubic-bezier(0.16,1,0.3,1)',
+        'border:2px solid rgba(255,255,255,0.3)'
       ].join(';');
       banner.innerHTML = `
-        <span style="font-size:22px">⏰</span>
-        <div>
-          <div style="font-size:12px;opacity:0.85;margin-bottom:2px;">FlowAI — Ahora</div>
-          <div>${item.name}</div>
+        <span style="font-size:28px;animation:alarmPulse 0.8s infinite alternate;">⏰</span>
+        <div style="flex:1">
+          <div style="font-size:11px;opacity:0.8;margin-bottom:3px;letter-spacing:0.5px;">FLOWAI · AHORA</div>
+          <div style="font-size:16px;">${item.name}</div>
         </div>
-        <button onclick="document.getElementById('alarmBanner_${item.id}').remove()"
-          style="background:rgba(255,255,255,0.2);border:none;color:white;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;margin-left:8px;flex-shrink:0;">✕</button>
+        <button onclick="document.getElementById('${bid}').remove();playSound('complete');"
+          style="background:rgba(255,255,255,0.25);border:none;color:white;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;">
+          OK ✓
+        </button>
       `;
       document.body.appendChild(banner);
-      setTimeout(() => banner?.remove(), 12000);
+      // Auto-dismiss after 5 minutes only if not manually closed
+      setTimeout(() => document.getElementById(bid)?.remove(), 300000);
 
       // Native notification as additional attempt
       sendNotification('⏰ FlowAI', item.name);
+    }
+
+    // Check on page load for tasks missed in the last 10 minutes
+    function checkMissedAlarms() {
+      const now = new Date();
+      const todayStr = localDate(now);
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+      tasks.forEach(task => {
+        if (task.completed) return;
+        if (task.date !== todayStr) return;
+        const [th, tm] = task.time.split(':').map(Number);
+        const taskMinutes = th * 60 + tm;
+        const diff = nowMinutes - taskMinutes;
+        if (diff > 0 && diff <= 10) { // missed within last 10 minutes
+          const key = `${task.id}_${task.date}_${task.time}`;
+          if (!firedAlarms.has(key)) {
+            firedAlarms.add(key);
+            triggerAlarm(task);
+          }
+        }
+      });
     }
 
     function initializeNotifications() {
@@ -3164,7 +3210,14 @@
       if (!settings.soundEnabled) return;
 
       try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        // Reuse shared context (keeps state between calls); create if missing
+        if (!sharedAudioCtx) {
+          sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (sharedAudioCtx.state === 'suspended') {
+          sharedAudioCtx.resume();
+        }
+        const ctx = sharedAudioCtx;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.connect(gain);
