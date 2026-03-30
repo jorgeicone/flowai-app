@@ -509,14 +509,13 @@
     }
 
     @keyframes taskEnter {
-      from {
-        opacity: 0;
-        transform: translateY(12px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes alarmSlide {
+      from { opacity: 0; transform: translateX(-50%) translateY(-20px) scale(0.9); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0)     scale(1);   }
     }
 
     .task-card:nth-child(1) { animation-delay: 0ms; }
@@ -1257,7 +1256,9 @@
     @media (max-width: 900px) {
       .app-container {
         grid-template-columns: 1fr;
-        grid-template-rows: 1fr var(--nav-h);
+        grid-template-rows: 1fr;
+        height: 100vh;
+        height: 100dvh;
       }
 
       .sidebar {
@@ -1278,7 +1279,13 @@
         gap: 0;
         background: var(--bg-1);
         border-top: 1px solid var(--border);
-        order: 2;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        z-index: 50;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
       }
 
       .mobile-nav-item {
@@ -1317,7 +1324,7 @@
       }
 
       .main-scroll {
-        padding-bottom: var(--nav-h);
+        padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 16px);
       }
 
       .modal-overlay {
@@ -2007,6 +2014,7 @@
       updateClock();
       setInterval(updateClock, 1000);
       setInterval(updateTimer, 1000);
+      setInterval(checkAlarms, 15000); // check alarms every 15 seconds
       initializeNotifications();
       loadSampleData();
     }
@@ -2042,23 +2050,29 @@
       const today = new Date();
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
+      const in2days = new Date(today);
+      in2days.setDate(today.getDate() + 2);
+      const in30 = new Date(today);
+      in30.setDate(today.getDate() + 30);
+      const in14 = new Date(today);
+      in14.setDate(today.getDate() + 14);
 
       tasks = [
-        { id: '1', name: 'Revisar emails', category: 'work', time: '09:00', date: today.toISOString().split('T')[0], duration: 15, priority: 'alta', completed: false, attachmentIds: [] },
-        { id: '2', name: 'Escribir documento', category: 'project', time: '10:00', date: today.toISOString().split('T')[0], duration: 60, priority: 'alta', completed: false, attachmentIds: [] },
-        { id: '3', name: 'Ejercicio', category: 'health', time: '07:00', date: today.toISOString().split('T')[0], duration: 30, priority: 'media', completed: false, attachmentIds: [] },
-        { id: '4', name: 'Llamada con cliente', category: 'work', time: '14:00', date: today.toISOString().split('T')[0], duration: 30, priority: 'alta', completed: false, attachmentIds: [] },
-        { id: '5', name: 'Preparar presentación', category: 'focus', time: '15:00', date: today.toISOString().split('T')[0], duration: 45, priority: 'alta', completed: false, attachmentIds: [] },
+        { id: '1', name: 'Revisar emails', category: 'work', time: '09:00', date: localDate(today), duration: 15, priority: 'alta', completed: false, attachmentIds: [] },
+        { id: '2', name: 'Escribir documento', category: 'project', time: '10:00', date: localDate(today), duration: 60, priority: 'alta', completed: false, attachmentIds: [] },
+        { id: '3', name: 'Ejercicio', category: 'health', time: '07:00', date: localDate(today), duration: 30, priority: 'media', completed: false, attachmentIds: [] },
+        { id: '4', name: 'Llamada con cliente', category: 'work', time: '14:00', date: localDate(today), duration: 30, priority: 'alta', completed: false, attachmentIds: [] },
+        { id: '5', name: 'Preparar presentación', category: 'focus', time: '15:00', date: localDate(today), duration: 45, priority: 'alta', completed: false, attachmentIds: [] },
       ];
 
       appointments = [
-        { id: 'a1', title: 'Team standup', description: 'Reunión diaria', date: tomorrow.toISOString().split('T')[0], startTime: '10:00', endTime: '10:30', location: 'Sala de reuniones', attendees: ['maria@example.com'], color: '#06b6d4' },
-        { id: 'a2', title: 'Brainstorm', description: 'Nuevas ideas', date: new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], startTime: '14:00', endTime: '15:30', location: 'Virtual', attendees: [], color: '#ec4899' },
+        { id: 'a1', title: 'Team standup', description: 'Reunión diaria', date: localDate(tomorrow), startTime: '10:00', endTime: '10:30', location: 'Sala de reuniones', attendees: ['maria@example.com'], color: '#06b6d4' },
+        { id: 'a2', title: 'Brainstorm', description: 'Nuevas ideas', date: localDate(in2days), startTime: '14:00', endTime: '15:30', location: 'Virtual', attendees: [], color: '#ec4899' },
       ];
 
       projects = [
-        { id: 'p1', name: 'App Redesign', description: 'Nueva interfaz', startDate: today.toISOString().split('T')[0], endDate: new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], progress: 60, team: [], color: '#7c3aed', priority: 'alta', status: 'in-progress' },
-        { id: 'p2', name: 'Documentation', description: 'Documentación técnica', startDate: today.toISOString().split('T')[0], endDate: new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], progress: 20, team: [], color: '#10b981', priority: 'media', status: 'todo' },
+        { id: 'p1', name: 'App Redesign', description: 'Nueva interfaz', startDate: localDate(today), endDate: localDate(in30), progress: 60, team: [], color: '#7c3aed', priority: 'alta', status: 'in-progress' },
+        { id: 'p2', name: 'Documentation', description: 'Documentación técnica', startDate: localDate(today), endDate: localDate(in14), progress: 20, team: [], color: '#10b981', priority: 'media', status: 'todo' },
       ];
 
       saveData();
@@ -3069,6 +3083,71 @@
       return Math.ceil(diff / (1000 * 60 * 60 * 24));
     }
 
+    // ── Alarm system ──────────────────────────────────────────────────────────
+    const firedAlarms = new Set();
+
+    function checkAlarms() {
+      const now = new Date();
+      const todayStr = localDate(now);
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      const currentTime = `${hh}:${mm}`;
+
+      tasks.forEach(task => {
+        if (task.completed) return;
+        if (task.date !== todayStr) return;
+        if (task.time !== currentTime) return;
+        const key = `${task.id}_${task.date}_${task.time}`;
+        if (firedAlarms.has(key)) return;
+        firedAlarms.add(key);
+        triggerAlarm(task);
+      });
+
+      // also check appointments
+      appointments.forEach(apt => {
+        if (apt.date !== todayStr) return;
+        if (apt.startTime !== currentTime) return;
+        const key = `apt_${apt.id}_${apt.date}_${apt.startTime}`;
+        if (firedAlarms.has(key)) return;
+        firedAlarms.add(key);
+        triggerAlarm({ name: apt.title, id: apt.id });
+      });
+    }
+
+    function triggerAlarm(item) {
+      // Sound + vibration
+      playSound('alarm');
+      if (settings.vibrationEnabled) navigator.vibrate?.([300, 100, 300, 100, 300]);
+
+      // On-screen banner (works on ALL browsers including iOS Safari)
+      const banner = document.createElement('div');
+      banner.id = 'alarmBanner_' + item.id;
+      banner.style.cssText = [
+        'position:fixed','top:20px','left:50%','transform:translateX(-50%)',
+        'background:linear-gradient(135deg,#7c3aed,#06b6d4)',
+        'color:white','padding:16px 20px','border-radius:16px',
+        'font-size:15px','font-weight:600','z-index:9999',
+        'box-shadow:0 8px 40px rgba(124,58,237,0.5)',
+        'display:flex','align-items:center','gap:12px',
+        'max-width:90vw','animation:alarmSlide 0.4s cubic-bezier(0.16,1,0.3,1)',
+        'cursor:pointer'
+      ].join(';');
+      banner.innerHTML = `
+        <span style="font-size:22px">⏰</span>
+        <div>
+          <div style="font-size:12px;opacity:0.85;margin-bottom:2px;">FlowAI — Ahora</div>
+          <div>${item.name}</div>
+        </div>
+        <button onclick="document.getElementById('alarmBanner_${item.id}').remove()"
+          style="background:rgba(255,255,255,0.2);border:none;color:white;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;margin-left:8px;flex-shrink:0;">✕</button>
+      `;
+      document.body.appendChild(banner);
+      setTimeout(() => banner?.remove(), 12000);
+
+      // Native notification as additional attempt
+      sendNotification('⏰ FlowAI', item.name);
+    }
+
     function initializeNotifications() {
       if ('Notification' in window && Notification.permission === 'default') {
         Notification.requestPermission();
@@ -3124,6 +3203,19 @@
           gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
           osc.start(ctx.currentTime);
           osc.stop(ctx.currentTime + 0.3);
+        } else if (type === 'alarm') {
+          // Three-beep alarm pattern
+          [0, 0.35, 0.7].forEach(t => {
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.frequency.setValueAtTime(880, ctx.currentTime + t);
+            o.frequency.setValueAtTime(1100, ctx.currentTime + t + 0.1);
+            g.gain.setValueAtTime(0.4, ctx.currentTime + t);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.3);
+            o.start(ctx.currentTime + t);
+            o.stop(ctx.currentTime + t + 0.3);
+          });
         }
       } catch (e) {
         console.log('Audio not available');
