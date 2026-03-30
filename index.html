@@ -1798,6 +1798,8 @@
           </div>
         </div>
 
+        <div class="page" data-page="focus"></div>
+
         <div class="page" data-page="settings">
           <div class="page-padding">
             <h2 class="today-greeting" style="margin-bottom: 24px;">Ajustes</h2>
@@ -1881,29 +1883,35 @@
                 </div>
               </div>
 
-              <!-- If already connected: show code + disconnect -->
+              <!-- If already connected: show pantry ID + actions -->
               <div id="syncShareBlock" style="display:none;">
                 <div style="background:var(--bg-3);border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:12px;">
-                  <div style="font-size:11px;color:var(--text-2);margin-bottom:6px;letter-spacing:0.5px;">TU CÓDIGO DE SYNC</div>
-                  <div id="syncCodeDisplay" style="font-family:var(--mono);font-size:13px;word-break:break-all;color:var(--accent-light);"></div>
+                  <div style="font-size:11px;color:var(--text-2);margin-bottom:6px;letter-spacing:0.5px;">TU PANTRY ID (úsalo en otros dispositivos)</div>
+                  <div id="syncCodeDisplay" style="font-family:var(--mono);font-size:12px;word-break:break-all;color:var(--accent-light);"></div>
                 </div>
-                <p style="font-size:12px;color:var(--text-2);margin-bottom:12px;">Copia este código y pégalo en cualquier otro dispositivo para sincronizar los datos al instante.</p>
+                <p style="font-size:12px;color:var(--text-2);margin-bottom:12px;">En cada dispositivo nuevo ve a Ajustes → Sincronización → pega este Pantry ID → toca Conectar.</p>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                  <button onclick="navigator.clipboard?.writeText(syncBlobId).then(()=>alert('Código copiado ✓'))" class="btn-primary" style="font-size:13px;padding:8px 16px;">📋 Copiar código</button>
+                  <button onclick="navigator.clipboard?.writeText(syncBlobId).then(()=>alert('Pantry ID copiado ✓'))" class="btn-primary" style="font-size:13px;padding:8px 16px;">📋 Copiar ID</button>
                   <button onclick="cloudPull()" class="btn-primary" style="font-size:13px;padding:8px 16px;background:var(--bg-4);">🔄 Sync ahora</button>
                   <button onclick="if(confirm('¿Desconectar sync? Tus datos locales se conservan.')){disconnectSync();}" class="btn-primary" style="font-size:13px;padding:8px 16px;background:linear-gradient(135deg,var(--red),#dc2626);">✕ Desconectar</button>
                 </div>
               </div>
 
-              <!-- If not connected: generate or enter code -->
+              <!-- If not connected: instructions + enter pantry ID -->
               <div id="syncConnectBlock">
-                <button onclick="cloudCreate()" class="btn-primary" style="width:100%;margin-bottom:12px;background:linear-gradient(135deg,var(--accent),var(--cyan));">
-                  ✨ Generar nuevo código de sync
-                </button>
-                <div style="text-align:center;color:var(--text-3);font-size:12px;margin-bottom:12px;">— o conectar con un código existente —</div>
+                <div style="background:var(--bg-3);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:14px;font-size:13px;color:var(--text-2);line-height:1.6;">
+                  <div style="font-weight:700;color:var(--text-1);margin-bottom:6px;">Cómo configurar (1 minuto, gratis):</div>
+                  <div>1️⃣ Ve a <strong style="color:var(--accent-light);">getpantry.cloud</strong></div>
+                  <div>2️⃣ Regístrate con tu email (gratis, sin tarjeta)</div>
+                  <div>3️⃣ Copia tu <strong>Pantry ID</strong> (el UUID largo)</div>
+                  <div>4️⃣ Pégalo abajo y toca <strong>Conectar</strong></div>
+                </div>
                 <div style="display:flex;gap:8px;">
-                  <input id="syncCodeInput" type="text" class="form-input" placeholder="Pega tu código aquí…" style="flex:1;font-family:var(--mono);font-size:13px;">
-                  <button onclick="connectSyncCode(document.getElementById('syncCodeInput').value)" class="btn-primary" style="padding:10px 16px;font-size:13px;">Conectar</button>
+                  <input id="syncCodeInput" type="text" class="form-input" placeholder="Pega tu Pantry ID aquí…" style="flex:1;font-family:var(--mono);font-size:12px;">
+                  <button onclick="connectSyncCode(document.getElementById('syncCodeInput').value)" class="btn-primary" style="padding:10px 16px;font-size:13px;white-space:nowrap;">Conectar</button>
+                </div>
+                <div style="text-align:center;margin-top:10px;">
+                  <a href="https://getpantry.cloud" target="_blank" style="color:var(--accent-light);font-size:12px;text-decoration:none;">→ Abrir getpantry.cloud</a>
                 </div>
               </div>
             </div>
@@ -2305,6 +2313,7 @@
         case 'projects': renderProjects(); break;
         case 'reminders': renderReminders(); break;
         case 'settings': renderSettings(); break;
+        case 'focus': renderFocusMobile(); break;
       }
     }
 
@@ -3155,48 +3164,30 @@
       return Math.ceil(diff / (1000 * 60 * 60 * 24));
     }
 
-    // ── Cloud Sync (jsonblob.com — free, no account required) ─────────────────
-    const BLOB_API = 'https://jsonblob.com/api/jsonBlob';
+    // ── Cloud Sync (getpantry.cloud — free, CORS-enabled) ─────────────────────
+    // pantryId is a UUID the user gets once at getpantry.cloud (free registration)
+    // All FlowAI data lives in the basket named "flowai" inside their pantry
+    const PANTRY_BASE = 'https://getpantry.cloud/apiv1/pantry';
+    const BASKET_NAME = 'flowai';
+
+    function pantryURL(pantryId) {
+      return `${PANTRY_BASE}/${pantryId}/basket/${BASKET_NAME}`;
+    }
 
     function syncPayload() {
       return { tasks, appointments, projects, categories, settings, attachments, updatedAt: Date.now() };
     }
 
-    async function cloudCreate() {
-      setSyncStatus('syncing');
-      try {
-        const res = await fetch(BLOB_API, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify(syncPayload())
-        });
-        if (!res.ok) throw new Error('create failed');
-        const loc = res.headers.get('Location') || '';
-        const id  = loc.split('/').pop();
-        if (!id) throw new Error('no id');
-        syncBlobId = id;
-        syncEnabled = true;
-        localStorage.setItem('flowai_sync_blob', id);
-        setSyncStatus('ok');
-        renderSyncUI();
-        startSyncInterval();
-        return id;
-      } catch (e) {
-        setSyncStatus('error');
-        return null;
-      }
-    }
-
     async function cloudPush() {
       if (!syncBlobId) return;
       const payload = JSON.stringify(syncPayload());
-      if (payload === lastPushHash) return; // nothing changed
+      if (payload === lastPushHash) return;
       lastPushHash = payload;
       setSyncStatus('syncing');
       try {
-        const res = await fetch(`${BLOB_API}/${syncBlobId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        const res = await fetch(pantryURL(syncBlobId), {
+          method: 'POST',   // POST creates or replaces the basket
+          headers: { 'Content-Type': 'application/json' },
           body: payload
         });
         setSyncStatus(res.ok ? 'ok' : 'error');
@@ -3207,18 +3198,14 @@
       if (!syncBlobId) return;
       setSyncStatus('syncing');
       try {
-        const res = await fetch(`${BLOB_API}/${syncBlobId}`, {
-          headers: { 'Accept': 'application/json' }
-        });
-        if (!res.ok) throw new Error('pull failed');
+        const res = await fetch(pantryURL(syncBlobId));
+        if (!res.ok) throw new Error('pull failed ' + res.status);
         const remote = await res.json();
-        // Merge: keep whichever is newer per item by updatedAt
         if (remote.tasks)        tasks        = remote.tasks;
         if (remote.appointments) appointments = remote.appointments;
         if (remote.projects)     projects     = remote.projects;
         if (remote.categories)   categories   = remote.categories;
         if (remote.attachments)  attachments  = remote.attachments;
-        // Save locally
         localStorage.setItem('flowai_tasks',        JSON.stringify(tasks));
         localStorage.setItem('flowai_appointments', JSON.stringify(appointments));
         localStorage.setItem('flowai_projects',     JSON.stringify(projects));
@@ -3233,20 +3220,25 @@
     async function connectSyncCode(code) {
       const id = code.trim();
       if (!id) return;
-      // Test if blob exists
       setSyncStatus('syncing');
       try {
-        const res = await fetch(`${BLOB_API}/${id}`, { headers: { 'Accept': 'application/json' } });
-        if (!res.ok) throw new Error('not found');
+        // First push current data to create the basket, then confirm
+        const res = await fetch(pantryURL(id), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(syncPayload())
+        });
+        if (!res.ok) throw new Error('connect failed ' + res.status);
         syncBlobId  = id;
         syncEnabled = true;
         localStorage.setItem('flowai_sync_blob', id);
-        await cloudPull();
+        setSyncStatus('ok');
         startSyncInterval();
         renderSyncUI();
+        alert('✅ ¡Sincronización activada! Tus datos se guardarán automáticamente en la nube.');
       } catch (e) {
         setSyncStatus('error');
-        alert('Código no encontrado. Verifica que sea correcto.');
+        alert('No se pudo conectar. Verifica que el Pantry ID sea correcto y que hayas registrado tu pantry en getpantry.cloud');
       }
     }
 
@@ -3499,8 +3491,87 @@
       }
     }
 
+    function renderFocusMobile() {
+      // On mobile, show the timer panel as a full-screen page
+      // The timer itself is in the right panel (desktop), so we clone its state
+      const el = document.querySelector('[data-page="focus"]');
+      if (!el) return;
+      el.innerHTML = `
+        <div style="padding:32px 24px;display:flex;flex-direction:column;align-items:center;gap:24px;">
+          <h2 style="font-size:24px;font-weight:700;">Focus Timer</h2>
+          <div class="timer-ring" style="width:200px;height:200px;position:relative;">
+            <svg viewBox="0 0 160 160" style="width:100%;height:100%;">
+              <circle cx="80" cy="80" r="72" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="8"/>
+              <circle cx="80" cy="80" r="72" fill="none" stroke="url(#timerGradient)" stroke-width="8"
+                stroke-dasharray="452" stroke-dashoffset="0" stroke-linecap="round"
+                transform="rotate(-90 80 80)" id="focusRingM"/>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+              <div id="focusTimeM" style="font-size:40px;font-weight:700;font-family:var(--mono);">${document.getElementById('timerDisplay')?.textContent || '25:00'}</div>
+              <div id="focusLabelM" style="font-size:12px;color:var(--text-2);letter-spacing:1px;">${document.getElementById('timerLabel')?.textContent || 'ENFOQUE'}</div>
+            </div>
+          </div>
+          <div id="focusTaskM" style="font-size:14px;color:var(--text-2);">${document.getElementById('timerTask')?.textContent || 'Sin tarea'}</div>
+          <div style="display:flex;gap:16px;">
+            <button onclick="resetTimer();updateFocusMobile();" style="width:52px;height:52px;border-radius:50%;background:var(--bg-3);border:1px solid var(--border);color:var(--text);font-size:20px;cursor:pointer;">↺</button>
+            <button onclick="toggleTimer();updateFocusMobile();" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--cyan));border:none;color:white;font-size:24px;cursor:pointer;" id="focusPlayM">▶</button>
+            <button onclick="skipTimer();updateFocusMobile();" style="width:52px;height:52px;border-radius:50%;background:var(--bg-3);border:1px solid var(--border);color:var(--text);font-size:20px;cursor:pointer;">⏭</button>
+          </div>
+          <div style="color:var(--text-2);font-size:13px;">Total hoy: <span id="focusTotalM">${document.getElementById('todayFocusTime')?.textContent || '0h 0min'}</span></div>
+        </div>
+      `;
+      // Sync updates
+      setInterval(() => {
+        const d = document.getElementById('timerDisplay');
+        const l = document.getElementById('timerLabel');
+        const t = document.getElementById('timerTask');
+        if (d) document.getElementById('focusTimeM').textContent  = d.textContent;
+        if (l) document.getElementById('focusLabelM').textContent = l.textContent;
+        if (t) document.getElementById('focusTaskM').textContent  = t.textContent;
+      }, 500);
+    }
+    function updateFocusMobile() { /* called after timer control; DOM updates via the interval */ }
+
     function showMoreMenu() {
-      navigateTo('reminders');
+      // Remove existing menu if open
+      document.getElementById('moreMenuOverlay')?.remove();
+
+      const overlay = document.createElement('div');
+      overlay.id = 'moreMenuOverlay';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);display:flex;align-items:flex-end;';
+      overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+      const sheet = document.createElement('div');
+      sheet.style.cssText = [
+        'width:100%;background:var(--bg-1);border-radius:24px 24px 0 0',
+        'padding:16px 20px calc(16px + env(safe-area-inset-bottom,0px))',
+        'border-top:1px solid var(--border)',
+        'animation:alarmSlide 0.3s cubic-bezier(0.16,1,0.3,1)',
+        'transform:translateX(0)'
+      ].join(';');
+
+      const items = [
+        { icon:'🔔', label:'Recordatorios', page:'reminders' },
+        { icon:'⏱️', label:'Focus Timer',   page:'focus'     },
+        { icon:'⚙️', label:'Ajustes',       page:'settings'  },
+      ];
+
+      sheet.innerHTML = `
+        <div style="width:40px;height:4px;background:var(--border-strong);border-radius:2px;margin:0 auto 20px;"></div>
+        <div style="font-size:13px;color:var(--text-2);font-weight:600;margin-bottom:12px;letter-spacing:0.5px;">MÁS OPCIONES</div>
+        ${items.map(it => `
+          <div onclick="document.getElementById('moreMenuOverlay').remove();navigateTo('${it.page}');"
+            style="display:flex;align-items:center;gap:16px;padding:16px;border-radius:var(--radius-sm);cursor:pointer;margin-bottom:6px;background:var(--bg-2);transition:background .2s;"
+            onmousedown="this.style.background='var(--bg-3)'" onmouseup="this.style.background='var(--bg-2)'">
+            <span style="font-size:24px;">${it.icon}</span>
+            <span style="font-size:16px;font-weight:500;">${it.label}</span>
+            <span style="margin-left:auto;color:var(--text-3);">›</span>
+          </div>
+        `).join('')}
+      `;
+
+      overlay.appendChild(sheet);
+      document.body.appendChild(overlay);
     }
 
     window.addEventListener('load', init);
