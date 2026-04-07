@@ -1722,6 +1722,11 @@
           <div class="nav-item-icon">⚙️</div>
           <span>Ajustes</span>
         </div>
+        <div style="height:1px;background:var(--border);margin:8px 12px;"></div>
+        <div class="nav-item" data-page="ean">
+          <div class="nav-item-icon">🎓</div>
+          <span>EAN Dashboard</span>
+        </div>
       </nav>
     </aside>
 
@@ -1799,6 +1804,12 @@
         </div>
 
         <div class="page" data-page="focus"></div>
+
+        <div class="page" data-page="ean">
+          <div class="page-padding">
+            <div id="eanContainer"></div>
+          </div>
+        </div>
 
         <div class="page" data-page="settings">
           <div class="page-padding">
@@ -2319,6 +2330,7 @@
         case 'reminders': renderReminders(); break;
         case 'settings': renderSettings(); break;
         case 'focus': renderFocusMobile(); break;
+        case 'ean': renderEAN(); break;
       }
     }
 
@@ -3537,6 +3549,233 @@
     }
     function updateFocusMobile() { /* called after timer control; DOM updates via the interval */ }
 
+    // ── EAN Dashboard ─────────────────────────────────────────────────────────
+    let eanSubTab = 'dashboard';
+
+    const eanAgenda = {
+      'Lunes 6':    [ { time:'10:00 AM', title:'Mercadeo y Gen. Valor G5',    type:'clase', color:'#f59e0b' } ],
+      'Martes 7':   [ { time:'02:00 PM', title:'Comunicación Digital 360',   type:'clase', color:'#ef4444' },
+                      { time:'04:30 PM', title:'Trade Marketing',             type:'clase', color:'#10b981' } ],
+      'Miércoles 8':[ { time:'10:00 AM', title:'Mercadeo y Gen. Valor G5',   type:'clase', color:'#f59e0b' },
+                      { time:'12:00 PM', title:'PAT-Mercadeo G15',            type:'clase', color:'#10b981' } ],
+      'Jueves 9':   [ { time:'02:00 PM', title:'Comunicación Digital 360',   type:'clase', color:'#ef4444' },
+                      { time:'06:00 PM', title:'Ventas Inteligentes',         type:'clase', color:'#10b981' } ],
+      'Viernes 10': [ { time:'12:00 PM', title:'PAT-Mercadeo G15',           type:'clase', color:'#10b981' },
+                      { time:'04:30 PM', title:'Acompañamiento Estratégico', type:'cita',  color:'#a3a3a3' },
+                      { time:'05:00 PM', title:'Cita Médica',                type:'cita',  color:'#06b6d4' } ]
+    };
+
+    const eanSalas = [
+      { day:'Martes 7',    start:'16:30', end:'17:30', room:'L721', color:'#7c3aed' },
+      { day:'Martes 7',    start:'17:30', end:'19:30', room:'L707', color:'#6d28d9' },
+      { day:'Martes 7',    start:'19:00', end:'21:00', room:'L706', color:'#ec4899' },
+      { day:'Miércoles 8', start:'13:00', end:'15:00', room:'L505', color:'#2563eb' },
+      { day:'Miércoles 8', start:'14:30', end:'17:30', room:'L717', color:'#06b6d4' },
+      { day:'Jueves 9',    start:'16:00', end:'19:00', room:'L706', color:'#ec4899' },
+      { day:'Viernes 10',  start:'13:00', end:'15:00', room:'L707', color:'#6d28d9' },
+    ];
+
+    const eanProyecto = [
+      { fase:'Arquitectura del AVE',  status:'done',    date:'18-20 Mar', obs:'Definición de estructura base completada.',    detail:'Validado con el equipo técnico.' },
+      { fase:'Conexión Inicial',      status:'done',    date:'23-29 Mar', obs:'Sincronización de APIs exitosa.',               detail:'Latencia optimizada bajo 200ms.' },
+      { fase:'Mod 1 y ajustes Conexión', status:'done', date:'30 Mar - 6 Abr', obs:'Ajustes de UI finales aplicados.',        detail:'Feedback de usuario integrado.' },
+      { fase:'Mod 2 y ajustes Mod 1', status:'active',  date:'7-12 Abr',  obs:'Enfoque en lógica de negocio.',                detail:'Pendiente revisión de seguridad.' },
+      { fase:'Mod 3 y ajustes Mod 2', status:'pending', date:'13-19 Abr', obs:'-',                                            detail:'-' },
+      { fase:'Cierre y ajustes Mod 3',status:'pending', date:'20-26 Abr', obs:'-',                                            detail:'-' },
+    ];
+
+    function renderEAN() {
+      const tabs = [
+        { id:'dashboard', label:'Control', icon:'📊' },
+        { id:'agenda',    label:'Agenda',  icon:'📅' },
+        { id:'salas',     label:'Salas',   icon:'🏛️' },
+        { id:'proyecto',  label:'AVE',     icon:'🗂️' },
+      ];
+
+      const tabBar = `
+        <div style="display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap;">
+          ${tabs.map(t => `
+            <button onclick="eanSubTab='${t.id}';renderEAN();"
+              style="display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-size:13px;font-weight:700;letter-spacing:0.03em;transition:all .2s;
+              ${eanSubTab===t.id
+                ? 'background:var(--accent);color:#fff;box-shadow:0 4px 16px var(--accent-glow);'
+                : 'background:var(--bg-2);color:var(--text-2);border:1px solid var(--border);'
+              }">
+              <span>${t.icon}</span><span>${t.label}</span>
+            </button>`).join('')}
+        </div>`;
+
+      let content = '';
+
+      if (eanSubTab === 'dashboard') {
+        content = `
+          <div style="display:grid;grid-template-columns:1fr;gap:20px;">
+            <!-- Foco del día -->
+            <div style="background:linear-gradient(135deg,rgba(124,58,237,0.25),rgba(6,182,212,0.1));border:1px solid rgba(124,58,237,0.3);border-radius:var(--radius-lg);padding:28px;position:relative;overflow:hidden;">
+              <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:var(--accent-glow);border-radius:50%;filter:blur(40px);pointer-events:none;"></div>
+              <div style="font-size:10px;font-weight:700;color:var(--accent-light);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:16px;">⚡ Foco del Día — Martes 7 Abril</div>
+              <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+                <div style="text-align:center;">
+                  <div style="font-size:48px;font-weight:900;color:#fff;line-height:1;">02:00</div>
+                  <div style="font-size:11px;font-weight:700;color:var(--accent-light);">PM</div>
+                </div>
+                <div>
+                  <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;">Comunicación Digital 360</div>
+                  <div style="font-size:13px;color:var(--text-2);">📍 Sala N412 · Presencial</div>
+                  <div style="margin-top:10px;display:inline-block;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:4px 12px;border-radius:999px;letter-spacing:0.05em;">PRÓXIMO</div>
+                </div>
+              </div>
+            </div>
+            <!-- Métricas -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;">
+              <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+                <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Clases esta semana</div>
+                <div style="font-size:32px;font-weight:900;color:#fff;">7</div>
+                <div style="font-size:12px;color:var(--green);margin-top:4px;">↑ En curso</div>
+              </div>
+              <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+                <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Salas reservadas</div>
+                <div style="font-size:32px;font-weight:900;color:#fff;">7</div>
+                <div style="font-size:12px;color:var(--cyan);margin-top:4px;">Sem. 15</div>
+              </div>
+              <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+                <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Progreso AVE</div>
+                <div style="font-size:32px;font-weight:900;color:#fff;">50%</div>
+                <div style="font-size:12px;color:var(--yellow);margin-top:4px;">Módulo 2 activo</div>
+              </div>
+              <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+                <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Métrica ejecución</div>
+                <div style="font-size:32px;font-weight:900;color:#fff;">92%</div>
+                <div style="height:4px;background:var(--bg-3);border-radius:2px;margin-top:8px;overflow:hidden;"><div style="width:92%;height:100%;background:linear-gradient(90deg,var(--accent),var(--cyan));border-radius:2px;"></div></div>
+              </div>
+            </div>
+            <!-- Roadmap AVE compacto -->
+            <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;">
+              <div style="font-size:12px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:20px;">🗺️ Roadmap AVE</div>
+              <div style="position:relative;padding-left:28px;">
+                <div style="position:absolute;left:10px;top:6px;bottom:6px;width:2px;background:var(--border);"></div>
+                ${eanProyecto.map((item, i) => `
+                  <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:${i<eanProyecto.length-1?'20':'0'}px;position:relative;">
+                    <div style="position:absolute;left:-22px;top:2px;width:14px;height:14px;border-radius:50%;
+                      border:3px solid var(--bg);
+                      background:${item.status==='done'?'var(--accent)':item.status==='active'?'#fff':'var(--bg-3)'};
+                      box-shadow:${item.status==='active'?'0 0 10px rgba(255,255,255,0.4)':'none'};"></div>
+                    <div>
+                      <div style="font-size:13px;font-weight:700;color:${item.status==='pending'?'var(--text-3)':item.status==='active'?'#fff':'var(--text-2)'};">${item.fase}</div>
+                      <div style="font-size:11px;color:var(--text-3);margin-top:2px;">${item.date}</div>
+                    </div>
+                    <div style="margin-left:auto;font-size:10px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap;
+                      ${item.status==='done'?'background:rgba(16,185,129,0.15);color:var(--green);':item.status==='active'?'background:var(--accent);color:#fff;':'color:var(--text-3);border:1px solid var(--border);'}">
+                      ${item.status==='done'?'✓ Done':item.status==='active'?'En curso':'Pendiente'}
+                    </div>
+                  </div>`).join('')}
+              </div>
+            </div>
+          </div>`;
+      }
+
+      else if (eanSubTab === 'agenda') {
+        const days = Object.keys(eanAgenda);
+        content = `
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;">
+            ${days.map(day => `
+              <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;min-height:200px;display:flex;flex-direction:column;">
+                <div style="font-size:11px;font-weight:800;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;">${day}</div>
+                <div style="display:flex;flex-direction:column;gap:10px;flex:1;">
+                  ${eanAgenda[day].length > 0
+                    ? eanAgenda[day].map(ev => `
+                        <div style="padding:12px;border-radius:var(--radius-sm);border-left:3px solid ${ev.color};background:${ev.color}18;transition:transform .15s;" onmouseenter="this.style.transform='scale(1.02)'" onmouseleave="this.style.transform='scale(1)'">
+                          <div style="font-size:10px;font-weight:700;color:${ev.color};text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">${ev.type==='cita'?'🩺':ev.type==='clase'?'📚':''} ${ev.time}</div>
+                          <div style="font-size:12px;font-weight:700;color:var(--text-1);line-height:1.3;">${ev.title}</div>
+                        </div>`).join('')
+                    : `<div style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-3);text-align:center;">Sin actividades</div>`
+                  }
+                </div>
+              </div>`).join('')}
+          </div>`;
+      }
+
+      else if (eanSubTab === 'salas') {
+        const dias = ['Lunes 6','Martes 7','Miércoles 8','Jueves 9','Viernes 10'];
+        content = `
+          <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
+            <div style="padding:24px 28px;border-bottom:1px solid var(--border);">
+              <div style="font-size:18px;font-weight:800;color:#fff;">🏛️ Ecosistema de Salas Legacy</div>
+              <div style="font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;margin-top:4px;">Universidad EAN · Semana 15 Abril 2026</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);min-height:360px;overflow-x:auto;">
+              ${dias.map(day => `
+                <div style="padding:20px;border-right:1px solid var(--border);">
+                  <div style="font-size:10px;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;text-align:center;margin-bottom:20px;">${day}</div>
+                  <div style="display:flex;flex-direction:column;gap:12px;">
+                    ${eanSalas.filter(r => r.day === day).map(res => `
+                      <div style="background:${res.color};padding:14px;border-radius:var(--radius-sm);color:#fff;position:relative;overflow:hidden;">
+                        <div style="font-size:9px;font-weight:700;opacity:0.7;text-transform:uppercase;letter-spacing:0.05em;">${res.start}–${res.end}</div>
+                        <div style="font-size:14px;font-weight:900;margin-top:4px;">SALA ${res.room}</div>
+                        <div style="font-size:9px;font-weight:600;opacity:0.6;margin-top:4px;">RESERVA CONFIRMADA</div>
+                      </div>`).join('') || `<div style="font-size:11px;color:var(--text-3);text-align:center;padding:20px 0;">Libre</div>`}
+                  </div>
+                </div>`).join('')}
+            </div>
+          </div>`;
+      }
+
+      else if (eanSubTab === 'proyecto') {
+        content = `
+          <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
+            <div style="padding:24px 28px;border-bottom:1px solid var(--border);">
+              <div style="font-size:18px;font-weight:800;color:#fff;">📋 Cronograma Maestro AVE</div>
+              <div style="font-size:11px;color:var(--accent-light);text-transform:uppercase;letter-spacing:0.1em;margin-top:4px;">Ejecución y Control de Hitos · Digital Business EAN</div>
+            </div>
+            <div style="overflow-x:auto;">
+              <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr style="background:rgba(255,255,255,0.02);">
+                    <th style="padding:16px 24px;text-align:left;font-size:10px;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;">Actividad</th>
+                    <th style="padding:16px 24px;text-align:left;font-size:10px;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;">Fecha</th>
+                    <th style="padding:16px 24px;text-align:left;font-size:10px;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;">Observaciones</th>
+                    <th style="padding:16px 24px;text-align:left;font-size:10px;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;">Detalle Técnico</th>
+                    <th style="padding:16px 24px;text-align:left;font-size:10px;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${eanProyecto.map((item, idx) => `
+                    <tr style="border-top:1px solid var(--border);${item.status==='active'?'background:rgba(124,58,237,0.06);':''}transition:background .15s;"
+                        onmouseenter="this.style.background='rgba(255,255,255,0.02)'"
+                        onmouseleave="this.style.background='${item.status==='active'?'rgba(124,58,237,0.06)':'transparent'}'">
+                      <td style="padding:20px 24px;">
+                        <div style="font-size:14px;font-weight:700;color:${item.status==='pending'?'var(--text-3)':'var(--text-1)'};">${item.fase}</div>
+                        <div style="font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.05em;margin-top:4px;">${idx===0?'Kick Off':'Semana '+(idx)}</div>
+                      </td>
+                      <td style="padding:20px 24px;font-size:12px;font-weight:600;color:var(--text-2);">${item.date}</td>
+                      <td style="padding:20px 24px;font-size:12px;color:var(--text-2);font-style:italic;">${item.obs}</td>
+                      <td style="padding:20px 24px;font-size:12px;color:var(--text-3);">${item.detail}</td>
+                      <td style="padding:20px 24px;">
+                        ${item.status==='done'
+                          ?'<span style="background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.3);padding:4px 12px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:0.05em;">✓ DONE</span>'
+                          :item.status==='active'
+                          ?'<span style="background:var(--accent);color:#fff;padding:4px 12px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:0.05em;box-shadow:0 4px 12px var(--accent-glow);">EN CURSO</span>'
+                          :'<span style="color:var(--text-3);border:1px solid var(--border);padding:4px 12px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:0.05em;">PENDING</span>'}
+                      </td>
+                    </tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>`;
+      }
+
+      const header = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+          <div>
+            <h2 style="font-size:26px;font-weight:900;color:#fff;letter-spacing:-0.02em;">🎓 EAN Dashboard</h2>
+            <div style="font-size:12px;color:var(--text-3);margin-top:4px;">Semana 15 · Abril 2026 · Universidad EAN</div>
+          </div>
+          <div style="font-size:12px;color:var(--accent-light);font-weight:600;">Digital Business, Marketplaces & Social Commerce</div>
+        </div>`;
+
+      document.getElementById('eanContainer').innerHTML = header + tabBar + content;
+    }
+
     function showMoreMenu() {
       // Remove existing menu if open
       document.getElementById('moreMenuOverlay')?.remove();
@@ -3556,6 +3795,7 @@
       ].join(';');
 
       const items = [
+        { icon:'🎓', label:'EAN Dashboard', page:'ean'       },
         { icon:'🔔', label:'Recordatorios', page:'reminders' },
         { icon:'⏱️', label:'Focus Timer',   page:'focus'     },
         { icon:'⚙️', label:'Ajustes',       page:'settings'  },
